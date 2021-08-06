@@ -637,11 +637,14 @@ namespace lsp
                 for (size_t i=0; i<nInputs; ++i)
                 {
                     const input_t *in = &vInputs[i];
-
-                    v->write_object("sBuffer", &in->sBuffer);
-                    v->write("vIn", in->vIn);
-                    v->write("pIn", in->pIn);
-                    v->write("pPan", in->pPan);
+                    v->begin_object(in, sizeof(input_t));
+                    {
+                        v->write_object("sBuffer", &in->sBuffer);
+                        v->write("vIn", in->vIn);
+                        v->write("pIn", in->pIn);
+                        v->write("pPan", in->pPan);
+                    }
+                    v->end_object();
                 }
             }
             v->end_array();
@@ -650,40 +653,42 @@ namespace lsp
                 for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
                 {
                     const processor_t *p = &vProcessors[i];
-
-                    v->begin_array("vDelay", p->vDelay, 2);
+                    v->begin_object(p, sizeof(processor_t));
                     {
-                        for (size_t i=0; i<2; ++i)
+                        v->begin_array("vDelay", p->vDelay, 2);
                         {
-                            const mono_processor_t *mp  = &p->vDelay[i];
+                            for (size_t i=0; i<2; ++i)
+                            {
+                                const mono_processor_t *mp  = &p->vDelay[i];
 
-                            v->write_object("sEqualizer", &mp->sEqualizer);
-                            v->writev("fGain", mp->fGain, 2);
+                                v->write_object("sEqualizer", &mp->sEqualizer);
+                                v->writev("fGain", mp->fGain, 2);
+                            }
                         }
+                        v->end_array();
+
+                        v->write("nDelay", p->nDelay);
+                        v->write("nNewDelay", p->nNewDelay);
+                        v->write("nMode", p->nMode);
+
+                        v->write("pMode", p->pMode);
+                        v->write("pEq", p->pEq);
+                        v->write("pTime", p->pTime);
+                        v->write("pDistance", p->pDistance);
+                        v->write("pFrac", p->pFrac);
+                        v->write("pDenom", p->pDenom);
+                        v->writev("pPan", p->pPan, 2);
+                        v->write("pGain", p->pGain);
+                        v->write("pGain", p->pGain);
+                        v->write("pLowCut", p->pLowCut);
+                        v->write("pLowFreq", p->pLowFreq);
+                        v->write("pHighCut", p->pHighCut);
+                        v->write("pHighFreq", p->pHighFreq);
+                        v->write("pSolo", p->pSolo);
+                        v->write("pMute", p->pMute);
+                        v->write("pPhase", p->pPhase);
+                        v->writev("pFreqGain", p->pFreqGain, meta::slap_delay_metadata::EQ_BANDS);
                     }
-                    v->end_array();
-
-                    v->write("nDelay", p->nDelay);
-                    v->write("nNewDelay", p->nNewDelay);
-                    v->write("nMode", p->nMode);
-
-                    v->write("pMode", p->pMode);
-                    v->write("pEq", p->pEq);
-                    v->write("pTime", p->pTime);
-                    v->write("pDistance", p->pDistance);
-                    v->write("pFrac", p->pFrac);
-                    v->write("pDenom", p->pDenom);
-                    v->writev("pPan", p->pPan, 2);
-                    v->write("pGain", p->pGain);
-                    v->write("pGain", p->pGain);
-                    v->write("pLowCut", p->pLowCut);
-                    v->write("pLowFreq", p->pLowFreq);
-                    v->write("pHighCut", p->pHighCut);
-                    v->write("pHighFreq", p->pHighFreq);
-                    v->write("pSolo", p->pSolo);
-                    v->write("pMute", p->pMute);
-                    v->write("pPhase", p->pPhase);
-                    v->writev("pFreqGain", p->pFreqGain, meta::slap_delay_metadata::EQ_BANDS);
                 }
             }
             v->end_array();
@@ -692,12 +697,15 @@ namespace lsp
                 for (size_t i=0; i<2; ++i)
                 {
                     const channel_t *c = &vChannels[i];
-
-                    v->write_object("sBypass", &c->sBypass);
-                    v->writev("fGain", c->fGain, 2);
-                    v->write("vRender", c->vRender);
-                    v->write("vOut", c->vOut);
-                    v->write("pOut", c->pOut);
+                    v->begin_object(c, sizeof(channel_t));
+                    {
+                        v->write_object("sBypass", &c->sBypass);
+                        v->writev("fGain", c->fGain, 2);
+                        v->write("vRender", c->vRender);
+                        v->write("vOut", c->vOut);
+                        v->write("pOut", c->pOut);
+                    }
+                    v->end_object();
                 }
             }
             v->end_array();
