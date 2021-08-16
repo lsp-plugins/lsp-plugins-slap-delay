@@ -21,7 +21,7 @@
 # Package version
 ARTIFACT_ID                 = LSP_PLUGINS_SLAP_DELAY
 ARTIFACT_NAME               = lsp-plugins-slap-delay
-ARTIFACT_DESC               = Trigger plugin series
+ARTIFACT_DESC               = Slap-Back Delay plugin series
 ARTIFACT_HEADERS            = lsp-plug.in
 ARTIFACT_EXPORT_ALL         = 1
 ARTIFACT_VERSION            = 1.0.2-devel
