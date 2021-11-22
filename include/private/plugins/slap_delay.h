@@ -127,7 +127,7 @@ namespace lsp
                 virtual ~slap_delay();
 
             public:
-                virtual void        init(plug::IWrapper *wrapper);
+                virtual void        init(plug::IWrapper *wrapper, plug::IPort **ports);
                 virtual void        destroy();
 
                 virtual bool        set_position(const plug::position_t *pos);
