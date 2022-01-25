@@ -39,7 +39,7 @@
 					<knob id="pred"/>
 					<vbox width.min="77" height.min="32" pad.h="0">
 						<knob id="tempo" visibility="!:sync" pad="0"/>
-						<indicator id="time:bpm" format="f4.1!" pad="0" visibility=":sync" text_color="green"/>
+						<indicator id="_time_bpm" format="f4.1!" pad="0" visibility=":sync" text_color="green"/>
 					</vbox>
 					<knob id="strch"/>
 					<cell rows="2" pad="0">
