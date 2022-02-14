@@ -146,6 +146,15 @@ namespace lsp
 
         static const int slap_delay_classes[] = { C_DELAY, -1 };
 
+        const meta::bundle_t slap_delay_bundle =
+        {
+            "slap_delay",
+            "Slap-back Delay",
+            B_DELAYS,
+            "hEUauzc_j3U",
+            "This plugin allows to add set of short delays of the original signal to the\noutput mix. Each delay can be used to simulate the early reflections of the\nsignal from walls. This allows to make the stereo image of the original signal\nwider, and the position of the source more definitive in the mix. Equalizers\nprovided for each delay line allow to simulate the fading of the original\nsignal. Every delay can be set in time, distance and musical time units. Also\ncommon pre-delay and time-stretching mechanisms are provided to allow the\nstereo image to change dynamically. Additionally, ramping mode is provided to\nsmoothen change of delay on automation."
+        };
+
         const meta::plugin_t slap_delay_mono =
         {
             "Slapback-Delay Mono",
@@ -164,7 +173,8 @@ namespace lsp
             slap_delay_mono_ports,
             "delay/slap_delay/mono.xml",
             NULL,
-            mono_to_stereo_plugin_port_groups
+            mono_to_stereo_plugin_port_groups,
+            &slap_delay_bundle
         };
 
         const meta::plugin_t slap_delay_stereo =
@@ -185,7 +195,8 @@ namespace lsp
             slap_delay_stereo_ports,
             "delay/slap_delay/stereo.xml",
             NULL,
-            stereo_plugin_port_groups
+            stereo_plugin_port_groups,
+            &slap_delay_bundle
         };
     } // namespace meta
 } // namespace lsp

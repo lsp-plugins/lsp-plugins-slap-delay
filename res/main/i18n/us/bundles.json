@@ -1,0 +1,7 @@
+{
+	"slap_delay": {
+		"name": "Slap-back Delay",
+		"description": "This plugin allows to add set of short delays of the original signal to the\noutput mix. Each delay can be used to simulate the early reflections of the\nsignal from walls. This allows to make the stereo image of the original signal\nwider, and the position of the source more definitive in the mix. Equalizers\nprovided for each delay line allow to simulate the fading of the original\nsignal. Every delay can be set in time, distance and musical time units. Also\ncommon pre-delay and time-stretching mechanisms are provided to allow the\nstereo image to change dynamically. Additionally, ramping mode is provided to\nsmoothen change of delay on automation."
+	}
+}
+
