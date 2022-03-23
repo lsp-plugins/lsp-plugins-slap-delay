@@ -1,0 +1,194 @@
+<plugin resizable="true">
+	<vbox spacing="4">
+		<group text="groups.chan.master" ipadding="0" spacing="0">
+			<grid rows="4" cols="17" bg.color="bg_schema">
+				<!-- r1 -->
+
+				<label text="labels.temperature" pad.h="6" pad.v="4" vreduce="true"/>
+				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+				<label text="labels.predelay" pad.h="6" pad.v="4" vreduce="true"/>
+				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+				<label text="labels.tempo" pad.h="6" pad.v="4" vreduce="true"/>
+				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+				<label text="labels.stretch" pad.h="6" pad.v="4" vreduce="true"/>
+				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+				<label text="labels.settings" pad.h="6" pad.v="4" vreduce="true"/>
+				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+				<label text="labels.signal.pan_l" pad.h="6" pad.v="4" vreduce="true"/>
+				<label text="labels.signal.pan_r" pad.h="6" pad.v="4" vreduce="true"/>
+				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+				<label text="labels.signal.dry" pad.h="6" pad.v="4" vreduce="true"/>
+				<label text="labels.signal.wet" pad.h="6" pad.v="4" vreduce="true"/>
+				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+				<label text="labels.output" pad.h="6" pad.v="4" vreduce="true"/>
+
+				<!-- r2 -->
+				<ui:with bg.color="bg" pad.v="2" vreduce="true">
+					<hsep/>
+					<hsep/>
+					<hsep/>
+					<hsep/>
+					<hsep/>
+					<cell cols="2"><hsep/></cell>
+					<cell cols="2"><hsep/></cell>
+					<hsep/>
+				</ui:with>
+
+				<!-- r3 -->
+				<ui:with pad.h="6" pad.v="4">
+					<knob id="temp"/>
+					<knob id="pred"/>
+					<vbox width.min="77" height.min="32" pad.h="0">
+						<knob id="tempo" visibility="!:sync" pad="0"/>
+						<indicator id="_time_bpm" format="f4.1!" pad="0" visibility=":sync" text_color="green"/>
+					</vbox>
+					<knob id="strch"/>
+					<cell rows="2" pad="0">
+						<grid rows="3" cols="1" fill="false" pad="0">
+							<button id="mono" text="labels.signal.mono" size="10" width="42" ui:inject="Button_green"/>
+							<button id="ramp" text="labels.ramp" size="10" width="42" ui:inject="Button_yellow"/>
+							<ttap id="tempo" text="actions.tap" width="42" tcolor="label_text" visibility="!:sync"/>
+						</grid>
+					</cell>
+					<knob id="pl_in" scolor="left"/>
+					<knob id="pr_in" scolor="right"/>
+					<knob id="dry" scolor="dry"/>
+					<knob id="wet" scolor="wet"/>
+					<knob id="g_out"/>
+				</ui:with>
+
+				<!-- r4 -->
+				<ui:with pad.h="6" pad.b="4">
+					<value id="temp"/>
+					<value id="pred"/>
+					<vbox fill="false" pad="0">
+						<label text="labels.host_bpm" visibility=":sync"/>
+						<value id="tempo" same_line="true" visibility="!:sync"/>
+						<button id="sync" text="labels.sync" size="10" width="77" ui:inject="Button_green"/>
+					</vbox>
+					<value id="strch"/>
+					<value id="pl_in"/>
+					<value id="pr_in"/>
+					<vbox fill="false" pad="0">
+						<value id="dry" same_line="true" width="48"/>
+						<button id="dm" text="labels.mute" size="10" ui:inject="Button_red"/>
+					</vbox>
+					<vbox fill="false" pad="0">
+						<value id="wet" same_line="true" width="48"/>
+						<button id="wm" size="10" text="labels.mute" ui:inject="Button_red"/>
+					</vbox>
+					<value id="g_out"/>
+				</ui:with>
+			</grid>
+		</group>
+
+		<cgroup id="lsel" text="Delay lines: " ipadding="0">
+			<!-- 4 groups -->
+			<ui:for id="g" first="0" last="3">
+				<grid rows="22" cols="22" spacing="0">
+
+					<ui:with pad.h="6" pad.v="4">
+						<cell rows="2"><label text="labels.specials.num" vreduce="true"/></cell>
+						<cell rows="22"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
+						<cell rows="2"><label text="labels.mode"/></cell>
+						<cell rows="2"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
+						<cell rows="2"><label text="labels.delay"/></cell>
+						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+						<cell cols="2"><label text="labels.panorama:pc"/></cell>
+						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+						<label text="labels.gain"/>
+						<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+						<cell rows="2"><label text="labels.filters" vreduce="true"/></cell>
+						<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+						<label text="labels.flt.low_cut" vreduce="true"/>
+						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+						<cell cols="5"><label text="labels.equalizer:db" vreduce="true"/></cell>
+						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+						<label text="labels.flt.high_cut"/>
+
+						<label text="labels.chan.left"/>
+						<label text="labels.chan.right"/>
+						<label text="labels.units.:db"/>
+						<label text="labels.units.:hz"/>
+						<label text="labels.flt.subs"/>
+						<label text="labels.flt.bass"/>
+						<label text="labels.flt.middle"/>
+						<label text="labels.flt.presence"/>
+						<label text="labels.flt.treble"/>
+						<label text="labels.units.:hz"/>
+					</ui:with>
+
+					<ui:for id="i" first=":g*4" last=":g*4+3">
+						<!-- Row 1 -->
+						<ui:with bg.color="bg" pad.v="2" vreduce="true">
+							<hsep/>
+							<cell cols="8"><hsep/></cell>
+							<hsep/>
+							<cell cols="9"><hsep/></cell>
+						</ui:with>
+
+						<cell rows="2"><label text="labels.specials.idx" text:id="${i}"/></cell>
+						<cell rows="2">
+							<grid rows="2" width="65" vfill="false" cols="3" pad.h="6">
+								<cell cols="3"><combo id="dm${i}" pad.b="4"/></cell>
+								<button id="s${i}" text="labels.chan.S_olo" size="19" ui:inject="Button_green_8"/>
+								<button id="m${i}" text="labels.chan.M_ute" height="19" width="20" pad.h="4" ui:inject="Button_red_8"/>
+								<button id="ph${i}" text="labels.signal.P_hase" size="19" ui:inject="Button_yellow_8"/>
+							</grid>
+						</cell>
+						<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
+						<hbox pad.h="6" width.min="48">
+							<knob id="dt${i}" visibility=":dm${i} ieq 1"/>
+							<knob id="dd${i}" visibility="(:dm${i} ieq 0) or (:dm${i} ieq 2)"/>
+							<frac id="df${i}" id2="ds${i}" visibility=":dm${i} ieq 3" color="green"/>
+						</hbox>
+						<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
+						<knob id="pl${i}" pad.h="6" scolor="left"/>
+						<knob id="pr${i}" pad.h="6" scolor="right"/>
+						<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
+						<knob id="dg${i}" pad.h="6"/>
+						<cell rows="2" fill="false">
+							<vbox fill="false" pad.h="6" pad.v="4">
+								<button id="lfc${i}" text="labels.flt.L_owC_ut" size="10" width.min="31" pad.b="4" ui:inject="Button_magenta_8"/>
+								<button id="eq${i}" text="labels.flt.EQ_ualizer" size="10" width.min="31" pad.b="4" ui:inject="Button_green_8"/>
+								<button id="hfc${i}" text="labels.flt.H_ighC_ut" size="10" width.min="31" ui:inject="Button_cyan_8"/>
+							</vbox>
+						</cell>
+
+						<knob id="flc${i}" pad.h="6" size="20" scolor="magenta"/>
+						<cell rows="2"><void bg.color="bg" width.max="4" hreduce="true"/></cell>
+						<ui:attributes size="20" pad.h="6" scolor="green">
+							<knob id="fbs${i}"/>
+							<knob id="fbb${i}"/>
+							<knob id="fbm${i}"/>
+							<knob id="fbp${i}"/>
+							<knob id="fbt${i}"/>
+						</ui:attributes>
+						<cell rows="2"><void bg.color="bg" width.max="4" hreduce="true"/></cell>
+						<knob id="fhc${i}" pad.h="6" size="20" scolor="cyan"/>
+
+						<!-- Row 2 -->
+
+						<hbox width.min="48">
+							<value id="dt${i}" visibility=":dm${i} ieq 1" same_line="true"/>
+							<value id="dd${i}" visibility="(:dm${i} ieq 0) or (:dm${i} ieq 2)" same_line="true"/>
+							<value id="df${i}" visibility=":dm${i} ieq 3" same_line="true" precision="3"/>
+						</hbox>
+						<ui:attributes detailed="false">
+							<value id="pl${i}"/>
+							<value id="pr${i}"/>
+							<value id="dg${i}"/>
+							<value id="flc${i}"/>
+							<value id="fbs${i}"/>
+							<value id="fbb${i}"/>
+							<value id="fbm${i}"/>
+							<value id="fbp${i}"/>
+							<value id="fbt${i}"/>
+							<value id="fhc${i}"/>
+						</ui:attributes>
+					</ui:for>
+				</grid>
+			</ui:for>
+		</cgroup>
+	</vbox>
+</plugin>
