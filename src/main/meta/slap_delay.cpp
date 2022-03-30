@@ -152,7 +152,7 @@ namespace lsp
             "Slap-back Delay",
             B_DELAYS,
             "hEUauzc_j3U",
-            "This plugin allows to add set of short delays of the original signal to the\noutput mix. Each delay can be used to simulate the early reflections of the\nsignal from walls. This allows to make the stereo image of the original signal\nwider, and the position of the source more definitive in the mix. Equalizers\nprovided for each delay line allow to simulate the fading of the original\nsignal. Every delay can be set in time, distance and musical time units. Also\ncommon pre-delay and time-stretching mechanisms are provided to allow the\nstereo image to change dynamically. Additionally, ramping mode is provided to\nsmoothen change of delay on automation."
+            "This plugin allows one to add set of short delays of the original signal to the\noutput mix. Each delay can be used to simulate the early reflections of the\nsignal from walls. This allows one to make the stereo image of the original signal\nwider, and the position of the source more definitive in the mix. Equalizers\nprovided for each delay line allow one to simulate the fading of the original\nsignal. Every delay can be set in time, distance and musical time units. Also\ncommon pre-delay and time-stretching mechanisms are provided to allow the\nstereo image to change dynamically. Additionally, ramping mode is provided to\nsmoothen change of delay on automation."
         };
 
         const meta::plugin_t slap_delay_mono =
