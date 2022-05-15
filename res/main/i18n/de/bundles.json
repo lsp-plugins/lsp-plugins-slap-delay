@@ -1,0 +1,7 @@
+{
+	"slap_delay": {
+		"name": "Slap-back Delay",
+		"description": "Mithilfe dieses Plugins kann eine Reihe von kurzen Delays auf das Signal \ngelegt werden. Jedes Delay kann dazu verwendet werden, schnelle \nkurze Reflektionen von den Wänden zu simulieren. \nDies macht das Stereosignal im Mix breiter und damit präsenter \nim Mix. Jede Delay-Linie kann mit Equalizern bearbeitet werden, \nsowie auch in den Kategorien: Zeit, Entfernung und auch Takt \nund anderen musikalischen Zeiteinheiten. Auch das verbreitete Pre-Delay \nund Zeitdehnungsmechanismen sind verfügbar um mehr Dynamik \nherzustellen. Zusätzlich kann durch einen Anschräge-Modus ein \nsanftes Verändern des Delays automatisiert werden."
+	}
+}
+
