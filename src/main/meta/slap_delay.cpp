@@ -25,7 +25,7 @@
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MAJOR       1
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MINOR       0
-#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       6
+#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       7
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION  \
     LSP_MODULE_VERSION( \
@@ -144,7 +144,9 @@ namespace lsp
             PORTS_END
         };
 
-        static const int slap_delay_classes[] = { C_DELAY, -1 };
+        static const int plugin_classes[]           = { C_DELAY, -1 };
+        static const int clap_features_mono[]       = { CF_AUDIO_EFFECT, CF_DELAY, CF_MONO, -1 };
+        static const int clap_features_stereo[]     = { CF_AUDIO_EFFECT, CF_DELAY, CF_STEREO, -1 };
 
         const meta::bundle_t slap_delay_bundle =
         {
@@ -167,8 +169,10 @@ namespace lsp
             "gt0d",
             LSP_LADSPA_SLAP_DELAY_BASE + 0,
             LSP_LADSPA_URI("slap_delay_mono"),
+            LSP_CLAP_URI("slap_delay_mono"),
             LSP_PLUGINS_SLAP_DELAY_VERSION,
-            slap_delay_classes,
+            plugin_classes,
+            clap_features_mono,
             E_DUMP_STATE,
             slap_delay_mono_ports,
             "delay/slap_delay/mono.xml",
@@ -189,8 +193,10 @@ namespace lsp
             "0xxj",
             LSP_LADSPA_SLAP_DELAY_BASE + 1,
             LSP_LADSPA_URI("slap_delay_stereo"),
+            LSP_CLAP_URI("slap_delay_stereo"),
             LSP_PLUGINS_SLAP_DELAY_VERSION,
-            slap_delay_classes,
+            plugin_classes,
+            clap_features_stereo,
             E_DUMP_STATE,
             slap_delay_stereo_ports,
             "delay/slap_delay/stereo.xml",
@@ -198,5 +204,5 @@ namespace lsp
             stereo_plugin_port_groups,
             &slap_delay_bundle
         };
-    } // namespace meta
-} // namespace lsp
+    } /* namespace meta */
+} /* namespace lsp */
