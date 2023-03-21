@@ -19,12 +19,13 @@
  * along with lsp-plugins-slap-delay. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <private/plugins/slap_delay.h>
 #include <lsp-plug.in/common/alloc.h>
+#include <lsp-plug.in/common/debug.h>
 #include <lsp-plug.in/dsp/dsp.h>
 #include <lsp-plug.in/dsp-units/units.h>
 #include <lsp-plug.in/plug-fw/meta/func.h>
 
+#include <private/plugins/slap_delay.h>
 
 #define BUFFER_SIZE             4096
 #define CONV_RANK               10
