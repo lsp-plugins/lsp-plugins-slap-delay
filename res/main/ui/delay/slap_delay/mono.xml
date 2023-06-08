@@ -136,7 +136,7 @@
 						<hbox pad.h="6" width.min="48">
 							<knob id="dt${i}" visibility=":dm${i} ieq 1"/>
 							<knob id="dd${i}" visibility="(:dm${i} ieq 0) or (:dm${i} ieq 2)"/>
-							<frac id="df${i}" id2="ds${i}" visibility=":dm${i} ieq 3" color="green"/>
+							<frac id="df${i}" den.id="ds${i}" visibility=":dm${i} ieq 3" color="green"/>
 						</hbox>
 						<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
 						<knob id="p${i}" pad.h="6" scolor="balance"/>
