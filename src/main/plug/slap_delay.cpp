@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2021 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2021 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2023 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2023 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -29,12 +29,17 @@
 
 #define BUFFER_SIZE             4096
 #define CONV_RANK               10
-#define TRACE_PORT(p)           lsp_trace("  port id=%s", (p)->metadata()->id);
 
 namespace lsp
 {
     namespace plugins
     {
+        static plug::IPort *TRACE_PORT(plug::IPort *p)
+        {
+            lsp_trace("  port id=%s", (p)->metadata()->id);
+            return p;
+        }
+
         //---------------------------------------------------------------------
         // Plugin factory
         static const meta::plugin_t *plugins[] =
@@ -72,6 +77,46 @@ namespace lsp
             vTemp           = NULL;
             bMono           = false;
 
+            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
+            {
+                processor_t *p      = &vProcessors[i];
+
+                p->nDelay           = 0;
+                p->nNewDelay        = 0;
+                p->nMode            = 0;
+
+                p->pMode            = NULL;
+                p->pEq              = NULL;
+                p->pTime            = NULL;
+                p->pDistance        = NULL;
+                p->pFrac            = NULL;
+                p->pDenom           = NULL;
+                p->pPan[0]          = NULL;
+                p->pPan[1]          = NULL;
+                p->pGain            = NULL;
+                p->pLowCut          = NULL;
+                p->pLowFreq         = NULL;
+                p->pHighCut         = NULL;
+                p->pHighFreq        = NULL;
+                p->pSolo            = NULL;
+                p->pMute            = NULL;
+                p->pPhase           = NULL;
+
+                for (size_t j=0; j<meta::slap_delay_metadata::EQ_BANDS; ++j)
+                    p->pFreqGain[j]     = NULL;
+            }
+
+            for (size_t i=0; i<2; ++i)
+            {
+                channel_t *c        = &vChannels[i];
+
+                c->fGain[0]         = 0.0f;
+                c->fGain[1]         = 0.0f;
+                c->vRender          = NULL;
+                c->vOut             = NULL;
+                c->pOut             = NULL;
+            }
+
             pBypass         = NULL;
             pTemp           = NULL;
             pDry            = NULL;
@@ -91,7 +136,7 @@ namespace lsp
 
         slap_delay::~slap_delay()
         {
-            destroy();
+            do_destroy();
         }
 
         void slap_delay::init(plug::IWrapper *wrapper, plug::IPort **ports)
@@ -172,103 +217,68 @@ namespace lsp
 
             lsp_trace("Binding audio ports");
             for (size_t i=0; i<nInputs; ++i)
-            {
-                TRACE_PORT(ports[port_id]);
-                vInputs[i].pIn  = ports[port_id++];
-            }
+                vInputs[i].pIn  = TRACE_PORT(ports[port_id++]);
+
             for (size_t i=0; i<2; ++i)
-            {
-                TRACE_PORT(ports[port_id]);
-                vChannels[i].pOut   = ports[port_id++];
-            }
+                vChannels[i].pOut   = TRACE_PORT(ports[port_id++]);
 
             // Bind common ports
             lsp_trace("Binding common ports");
-            TRACE_PORT(ports[port_id]);
-            pBypass         = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            port_id ++;     // Skip delay selector
-            TRACE_PORT(ports[port_id]);
-            pTemp           = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pPred           = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pStretch        = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pTempo          = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pSync           = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pRamping        = ports[port_id++];
+            pBypass         = TRACE_PORT(ports[port_id++]);
+            TRACE_PORT(ports[port_id++]); // Skip delay selector
+            pTemp           = TRACE_PORT(ports[port_id++]);
+            pPred           = TRACE_PORT(ports[port_id++]);
+            pStretch        = TRACE_PORT(ports[port_id++]);
+            pTempo          = TRACE_PORT(ports[port_id++]);
+            pSync           = TRACE_PORT(ports[port_id++]);
+            pRamping        = TRACE_PORT(ports[port_id++]);
 
             for (size_t i=0; i<nInputs; ++i)
-            {
-                TRACE_PORT(ports[port_id]);
-                vInputs[i].pPan     = ports[port_id++];
-            }
+                vInputs[i].pPan     = TRACE_PORT(ports[port_id++]);
 
-            TRACE_PORT(ports[port_id]);
-            pDry            = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pDryMute        = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pWet            = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pWetMute        = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pMono           = ports[port_id++];
-            TRACE_PORT(ports[port_id]);
-            pOutGain        = ports[port_id++];
+            pDry            = TRACE_PORT(ports[port_id++]);
+            pDryMute        = TRACE_PORT(ports[port_id++]);
+            pWet            = TRACE_PORT(ports[port_id++]);
+            pWetMute        = TRACE_PORT(ports[port_id++]);
+            pMono           = TRACE_PORT(ports[port_id++]);
+            pOutGain        = TRACE_PORT(ports[port_id++]);
 
             // Bind processor ports
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
             {
                 processor_t *p      = &vProcessors[i];
 
-                TRACE_PORT(ports[port_id]);
-                p->pMode            = ports[port_id++];
+                p->pMode            = TRACE_PORT(ports[port_id++]);
                 for (size_t j=0; j<nInputs; ++j)
-                {
-                    TRACE_PORT(ports[port_id]);
-                    p->pPan[j]          = ports[port_id++];
-                }
-                TRACE_PORT(ports[port_id]);
-                p->pSolo            = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pMute            = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pPhase           = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pTime            = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pDistance        = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pFrac            = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pDenom           = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pEq              = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pLowCut          = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pLowFreq         = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pHighCut         = ports[port_id++];
-                TRACE_PORT(ports[port_id]);
-                p->pHighFreq        = ports[port_id++];
+                    p->pPan[j]          = TRACE_PORT(ports[port_id++]);
+
+                p->pSolo            = TRACE_PORT(ports[port_id++]);
+                p->pMute            = TRACE_PORT(ports[port_id++]);
+                p->pPhase           = TRACE_PORT(ports[port_id++]);
+                p->pTime            = TRACE_PORT(ports[port_id++]);
+                p->pDistance        = TRACE_PORT(ports[port_id++]);
+                p->pFrac            = TRACE_PORT(ports[port_id++]);
+                p->pDenom           = TRACE_PORT(ports[port_id++]);
+                p->pEq              = TRACE_PORT(ports[port_id++]);
+                p->pLowCut          = TRACE_PORT(ports[port_id++]);
+                p->pLowFreq         = TRACE_PORT(ports[port_id++]);
+                p->pHighCut         = TRACE_PORT(ports[port_id++]);
+                p->pHighFreq        = TRACE_PORT(ports[port_id++]);
 
                 for (size_t j=0; j<meta::slap_delay_metadata::EQ_BANDS; ++j)
-                {
-                    TRACE_PORT(ports[port_id]);
-                    p->pFreqGain[j]     = ports[port_id++];
-                }
+                    p->pFreqGain[j]     = TRACE_PORT(ports[port_id++]);
 
-                TRACE_PORT(ports[port_id]);
-                p->pGain            = ports[port_id++];
+                p->pGain            = TRACE_PORT(ports[port_id++]);
             }
         }
 
         void slap_delay::destroy()
+        {
+            plug::Module::destroy();
+            do_destroy();
+        }
+
+        void slap_delay::do_destroy()
         {
             if (vInputs != NULL)
             {
@@ -731,7 +741,7 @@ namespace lsp
             v->write("vData", vData);
         }
 
-    } // namespace plugins
-} // namespace lsp
+    } /* namespace plugins */
+} /* namespace lsp */
 
 
