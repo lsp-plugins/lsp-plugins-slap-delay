@@ -87,25 +87,25 @@
 			<ui:for id="g" first="0" last="3">
 				<grid rows="22" cols="22" spacing="0">
 
-					<ui:with pad.h="6" pad.v="4">
-						<cell rows="2"><label text="labels.specials.num" vreduce="true"/></cell>
-						<cell rows="22"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
-						<cell rows="2"><label text="labels.mode"/></cell>
-						<cell rows="2"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
-						<cell rows="2"><label text="labels.delay"/></cell>
-						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
-						<cell cols="2"><label text="labels.panorama:pc"/></cell>
-						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
-						<label text="labels.gain"/>
-						<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
-						<cell rows="2"><label text="labels.filters" vreduce="true"/></cell>
-						<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
-						<label text="labels.flt.low_cut" vreduce="true"/>
-						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
-						<cell cols="5"><label text="labels.equalizer:db" vreduce="true"/></cell>
-						<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
-						<label text="labels.flt.high_cut"/>
+					<cell rows="2"><label text="labels.specials.num" hreduce="true" pad.h="6"/></cell>
+					<cell rows="22"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
+					<cell rows="2"><label text="labels.mode"/></cell>
+					<cell rows="2"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
+					<cell rows="2"><label text="labels.delay"/></cell>
+					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<cell cols="2"><label text="labels.panorama:pc" pad.v="4"/></cell>
+					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<label text="labels.gain"/>
+					<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<cell rows="2"><label text="labels.filters" vreduce="true"/></cell>
+					<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<label text="labels.flt.low_cut" vreduce="true" pad.v="4" pad.h="6"/>
+					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<cell cols="5"><label text="labels.equalizer:db" vreduce="true" pad.v="4"/></cell>
+					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<label text="labels.flt.high_cut" pad.v="4" pad.h="6"/>
 
+					<ui:with pad.b="4">
 						<label text="labels.chan.left"/>
 						<label text="labels.chan.right"/>
 						<label text="labels.units.:db"/>
@@ -127,6 +127,7 @@
 							<cell cols="9"><hsep/></cell>
 						</ui:with>
 
+<ui:with bright="(:dm${i} igt 0) and !(:m${i}) ? 1 : 0.75" bg.bright="(:dm${i} igt 0) and !(:m${i}) ? 1 : :const_bg_darken">
 						<cell rows="2"><label text="labels.specials.idx" text:id="${i}"/></cell>
 						<cell rows="2">
 							<grid rows="2" width="65" vfill="false" cols="3" pad.h="6">
@@ -138,15 +139,15 @@
 						</cell>
 						<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
 						<hbox pad.h="6" width.min="48">
-							<knob id="dt${i}" visibility=":dm${i} ieq 1"/>
-							<knob id="dd${i}" visibility="(:dm${i} ieq 0) or (:dm${i} ieq 2)"/>
+							<knob id="dt${i}" visibility=":dm${i} ieq 1" scolor="(:dm${i} igt 0) and !(:m${i}) ? 'kscale' : 'cycle_inactive'"/>
+							<knob id="dd${i}" visibility="(:dm${i} ieq 0) or (:dm${i} ieq 2)" scolor="(:dm${i} igt 0) and !(:m${i}) ? 'kscale' : 'cycle_inactive'"/>
 							<frac id="df${i}" den.id="ds${i}" visibility=":dm${i} ieq 3" color="green"/>
 						</hbox>
 						<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
-						<knob id="pl${i}" pad.h="6" scolor="left"/>
-						<knob id="pr${i}" pad.h="6" scolor="right"/>
+						<knob id="pl${i}" pad.h="6" scolor="(:dm${i} igt 0) and !(:m${i}) ? 'left' : 'cycle_inactive'"/>
+						<knob id="pr${i}" pad.h="6" scolor="(:dm${i} igt 0) and !(:m${i}) ? 'right' : 'cycle_inactive'"/>
 						<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
-						<knob id="dg${i}" pad.h="6"/>
+						<knob id="dg${i}" pad.h="6" scolor="(:dm${i} igt 0) and !(:m${i}) ? 'kscale' : 'cycle_inactive'"/>
 						<cell rows="2" fill="false">
 							<vbox fill="false" pad.h="6" pad.v="4">
 								<button id="lfc${i}" text="labels.flt.L_owC_ut" size="10" width.min="31" pad.b="4" ui:inject="Button_magenta_8"/>
@@ -155,17 +156,19 @@
 							</vbox>
 						</cell>
 
-						<knob id="flc${i}" pad.h="6" size="20" scolor="magenta"/>
+						<knob id="flc${i}" pad.h="6" size="20" scolor="(:dm${i} igt 0) and !(:m${i}) and :lfc${i} ? 'magenta' : 'cycle_inactive'" bright="(:dm${i} igt 0) and !(:m${i}) and :lfc${i} ? 1 : 0.75" bg.bright="(:dm${i} igt 0) and !(:m${i}) and :lfc${i} ? 1 : :const_bg_darken"/>
 						<cell rows="2"><void bg.color="bg" width.max="4" hreduce="true"/></cell>
-						<ui:attributes size="20" pad.h="6" scolor="green">
+						<ui:attributes size="20" pad.h="6" scolor="(:dm${i} igt 0) and !(:m${i}) and :eq${i} ? 'green' : 'cycle_inactive'">
+							<ui:with bright="(:dm${i} igt 0) and !(:m${i}) and :eq${i} ? 1 : 0.75" bg.bright="(:dm${i} igt 0) and !(:m${i}) and :eq${i} ? 1 : :const_bg_darken">
 							<knob id="fbs${i}"/>
 							<knob id="fbb${i}"/>
 							<knob id="fbm${i}"/>
 							<knob id="fbp${i}"/>
 							<knob id="fbt${i}"/>
+						</ui:with>
 						</ui:attributes>
 						<cell rows="2"><void bg.color="bg" width.max="4" hreduce="true"/></cell>
-						<knob id="fhc${i}" pad.h="6" size="20" scolor="cyan"/>
+						<knob id="fhc${i}" pad.h="6" size="20" scolor="(:dm${i} igt 0) and !(:m${i}) and :hfc${i} ? 'kscale' : 'cycle_inactive'" bright="(:dm${i} igt 0) and !(:m${i}) and :hfc${i} ? 1 : 0.75" bg.bright="(:dm${i} igt 0) and !(:m${i}) and :hfc${i} ? 1 : :const_bg_darken"/>
 
 						<!-- Row 2 -->
 
@@ -178,14 +181,17 @@
 							<value id="pl${i}"/>
 							<value id="pr${i}"/>
 							<value id="dg${i}"/>
-							<value id="flc${i}"/>
+							<value id="flc${i}" bright="(:dm${i} igt 0) and !(:m${i}) and :lfc${i} ? 1 : 0.75" bg.bright="(:dm${i} igt 0) and !(:m${i}) and :lfc${i} ? 1 : :const_bg_darken"/>
+							<ui:with bright="(:dm${i} igt 0) and !(:m${i}) and :eq${i} ? 1 : 0.75" bg.bright="(:dm${i} igt 0) and !(:m${i}) and :eq${i} ? 1 : :const_bg_darken">
 							<value id="fbs${i}"/>
 							<value id="fbb${i}"/>
 							<value id="fbm${i}"/>
 							<value id="fbp${i}"/>
 							<value id="fbt${i}"/>
-							<value id="fhc${i}"/>
+						</ui:with>
+							<value id="fhc${i}" bright="(:dm${i} igt 0) and !(:m${i}) and :hfc${i} ? 1 : 0.75" bg.bright="(:dm${i} igt 0) and !(:m${i}) and :hfc${i} ? 1 : :const_bg_darken"/>
 						</ui:attributes>
+					</ui:with>
 					</ui:for>
 				</grid>
 			</ui:for>
