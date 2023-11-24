@@ -129,7 +129,7 @@
 							<cell cols="9"><hsep/></cell>
 						</ui:with>
 
-						<ui:with bright="!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i})) ? 0.75 : 1.0" bg.bright="!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i})) ? :const_bg_darken : 1.0">
+						<ui:with bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? 0.75 : 1.0" bg.bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? :const_bg_darken : 1.0">
 							<cell rows="2"><label text="labels.specials.idx" text:id="${i}"/></cell>
 							<cell rows="2">
 								<grid rows="2" width="65" vfill="false" cols="3" pad.h="6">
@@ -141,15 +141,15 @@
 							</cell>
 							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
 							<hbox pad.h="6" width.min="48">
-								<knob id="dt${i}" visibility=":dm${i} ieq 1" scolor="!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i})) ? 'cycle_inactive' : 'kscale'"/>
-								<knob id="dd${i}" visibility="(:dm${i} ieq 0) or (:dm${i} ieq 2)" scolor="!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i})) ? 'cycle_inactive' : 'kscale'"/>
+								<knob id="dt${i}" visibility=":dm${i} ieq 1" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? 'cycle_inactive' : 'kscale'"/>
+								<knob id="dd${i}" visibility="(:dm${i} ieq 0) or (:dm${i} ieq 2)" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? 'cycle_inactive' : 'kscale'"/>
 								<frac id="df${i}" den.id="ds${i}" visibility=":dm${i} ieq 3" color="green"/>
 							</hbox>
 							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
-							<knob id="pl${i}" pad.h="6" scolor="!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i})) ?  'cycle_inactive' : 'left'"/>
-							<knob id="pr${i}" pad.h="6" scolor="!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i})) ?  'cycle_inactive' : 'right'"/>
+							<knob id="pl${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'left'"/>
+							<knob id="pr${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'right'"/>
 							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
-							<knob id="dg${i}" pad.h="6" scolor="!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i})) ?  'cycle_inactive' : 'kscale'"/>
+							<knob id="dg${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'kscale'"/>
 							<cell rows="2" fill="false">
 								<vbox fill="false" pad.h="6" pad.v="4">
 									<button id="lfc${i}" text="labels.flt.L_owC_ut" size="10" width.min="31" pad.b="4" ui:inject="Button_magenta_8"/>
@@ -162,12 +162,14 @@
 								id="flc${i}"
 								pad.h="6"
 								size="20"
-								scolor="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:lfc${i} ?  'cycle_inactive' : 'magenta'"
-								bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:lfc${i} ? 0.75 : 1.0"
-								bg.bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:lfc${i} ? :const_bg_darken : 1.0"/>
+								scolor="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ?  'cycle_inactive' : 'magenta'"
+								bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? 0.75 : 1.0"
+								bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? :const_bg_darken : 1.0"/>
+							</ui:with>
 							<cell rows="2"><void bg.color="bg" width.max="4" hreduce="true"/></cell>
-							<ui:attributes size="20" pad.h="6" scolor="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:eq${i} ?  'cycle_inactive' : 'green'">
-								<ui:with bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:eq${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:eq${i} ? :const_bg_darken : 1.0">
+							<ui:with bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? 0.75 : 1.0" bg.bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? :const_bg_darken : 1.0">
+							<ui:attributes size="20" pad.h="6" scolor="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ?  'cycle_inactive' : 'green'">
+								<ui:with bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? :const_bg_darken : 1.0">
 									<knob id="fbs${i}"/>
 									<knob id="fbb${i}"/>
 									<knob id="fbm${i}"/>
@@ -175,14 +177,16 @@
 									<knob id="fbt${i}"/>
 								</ui:with>
 							</ui:attributes>
-							<cell rows="2"><void bg.color="bg" width.max="4" hreduce="true"/></cell>
+						</ui:with>
+						<cell rows="2"><void bg.color="bg" width.max="4" hreduce="true"/></cell>
+						<ui:with bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? 0.75 : 1.0" bg.bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? :const_bg_darken : 1.0">
 							<knob
 								id="fhc${i}"
 								pad.h="6"
 								size="20"
-								scolor="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:hfc${i} ?  'cycle_inactive' : 'kscale'"
-								bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:hfc${i} ? 0.75 : 1.0"
-								bg.bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:hfc${i} ? :const_bg_darken : 1.0"/>
+								scolor="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:hfc${i} ?  'cycle_inactive' : 'kscale'"
+								bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:hfc${i} ? 0.75 : 1.0"
+								bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:hfc${i} ? :const_bg_darken : 1.0"/>
 
 							<!-- Row 2 -->
 
@@ -195,15 +199,15 @@
 								<value id="pl${i}"/>
 								<value id="pr${i}"/>
 								<value id="dg${i}"/>
-								<value id="flc${i}" bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:lfc${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:lfc${i} ? :const_bg_darken : 1.0"/>
-								<ui:with bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:eq${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:eq${i} ? :const_bg_darken : 1.0">
+								<value id="flc${i}" bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? :const_bg_darken : 1.0"/>
+								<ui:with bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? :const_bg_darken : 1.0">
 									<value id="fbs${i}"/>
 									<value id="fbb${i}"/>
 									<value id="fbm${i}"/>
 									<value id="fbp${i}"/>
 									<value id="fbt${i}"/>
 								</ui:with>
-								<value id="fhc${i}" bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:hfc${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or (:m${i} or ((${has_solo}) and !:s${i}))) or !:hfc${i} ? :const_bg_darken : 1.0"/>
+								<value id="fhc${i}" bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:hfc${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:hfc${i} ? :const_bg_darken : 1.0"/>
 							</ui:attributes>
 						</ui:with>
 					</ui:for>
