@@ -161,6 +161,7 @@ namespace lsp
         {
             "Slapback-Delay Mono",
             "Slapback Delay Mono",
+            "Slapback Delay Mono",
             "SD16M",
             &developers::v_sadovnikov,
             "slap_delay_mono",
@@ -184,6 +185,7 @@ namespace lsp
         const meta::plugin_t slap_delay_stereo =
         {
             "Slapback-Delay Stereo",
+            "Slapback Delay Stereo",
             "Slapback Delay Stereo",
             "SD16S",
             &developers::v_sadovnikov,
