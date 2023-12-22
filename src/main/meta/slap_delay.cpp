@@ -25,7 +25,7 @@
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MAJOR       1
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MINOR       0
-#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       16
+#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       17
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION  \
     LSP_MODULE_VERSION( \
@@ -161,6 +161,7 @@ namespace lsp
         {
             "Slapback-Delay Mono",
             "Slapback Delay Mono",
+            "Slapback Delay Mono",
             "SD16M",
             &developers::v_sadovnikov,
             "slap_delay_mono",
@@ -184,6 +185,7 @@ namespace lsp
         const meta::plugin_t slap_delay_stereo =
         {
             "Slapback-Delay Stereo",
+            "Slapback Delay Stereo",
             "Slapback Delay Stereo",
             "SD16S",
             &developers::v_sadovnikov,
