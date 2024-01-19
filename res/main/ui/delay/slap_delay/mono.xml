@@ -81,6 +81,83 @@
 			</grid>
 		</group>
 
+		<graph width.min="256" height.min="256" expand="true" fill="true">
+			<origin hpos="0" vpos="-1" visible="false"/>
+
+			<!-- X -->
+			<axis min="-100" max="100" color="graph_prim" angle="0.0" log="false" visibility="false"/>
+			<!-- Y -->
+			<axis min="-80 db" max="20 db" color="graph_prim" angle="0.5" log="true" visibility="false"/>
+
+			<!-- Gray grid -->
+			<!-- <ui:for id="g" first="-80" last="20" step="24"> -->
+				<!-- <marker v="${g} db" color="graph_alt_1"/> -->
+				<!-- <marker v="${g} db" ox="1" oy="0" color="graph_alt_1"/> -->
+			<!-- </ui:for> -->
+
+			<!-- Yellow grid -->
+			<!-- <ui:for id="g" first="-80" last="20" step="24"> -->
+				<!-- <marker v="${g} db" color="graph_sec"/> -->
+				<!-- <marker v="${g} db" ox="1" oy="0" color="graph_sec"/> -->
+			<!-- </ui:for> -->
+
+			<!-- Axes and boundaries -->
+			<!-- <marker v="1" ox="1" oy="0" dv="1" dx=":_a_width" dy=":_a_height" color="graph_alt_1" width="2" smooth="true"/>
+			<marker v="24 db" color="graph_alt_1" visibility="false"/>
+			<marker v="24 db" ox="1" oy="0" color="graph_alt_1" visibility="false"/> -->
+
+			<!-- 0 dB markers -->
+			<marker v="0 db" ox="0" oy="1" width="2" color="balance"/>
+			<marker v="0 db" ox="1" oy="0" width="2" color="gain"/>
+
+			<!-- Meshes -->
+			<mesh id="ccg" width="3" color="graph_mesh" smooth="true"/>
+
+			<ui:for id="i" first="0" last="15">
+				<dot
+					pointer="drag" x.editable="true" y.editable="true" z.editable="true"
+					x.id="p${i}" y.id="dg${i}" z.id="gt${i}"
+					size="1 + 3*:_ui_filter_point_thickness"
+					hover.size="1 + 3*:_ui_filter_point_thickness"
+					color=":xm_${i} ? 'gray_inactive' : 'graph_marker_cycle'"
+					color.hue=":hue_${i}"
+					border.size=":current_filter ieq ${i} ? 15 : 5"
+					hover.border.size=":current_filter ieq ${i} ? 15 : 5"
+					hover.color=":xm_${i} ? 'gray_inactive' : 'graph_marker_cycle'"
+					hover.color.hue=":hue_${i}"
+					bcolor=":xm_${i} ? 'gray_inactive' : 'graph_marker_cycle'"
+					bcolor.hue=":hue_${i}"
+					hover.bcolor=":xm_${i} ? 'gray_inactive' : 'graph_marker_cycle'"
+					hover.bcolor.hue=":hue_${i}"
+					x.astep="1" y.astep="1"
+					visibility=":dm${i} ine 0"
+				/>
+			</ui:for>
+
+			<dot x.id="elm_l" y.id="clm_l" color="graph_mesh" bcolor="graph_mesh" visibility="!:ssplit"/>
+			<dot x.id="elm_l" y.id="clm_l" color="left" bcolor="left" visibility=":ssplit"/>
+			<dot x.id="elm_r" y.id="clm_r" color="right" bcolor="right" visibility=":ssplit"/>
+
+			<!-- Text -->
+			<text x="0 db" y="0 db" text="0" halign="1" valign="1"/>
+			<ui:attributes x="0 db" halign="1" valign="-1">
+				<text y="24 db" text="graph.units.db"/>
+				<text y="12 db" text="+12"/>
+				<text y="-12 db" text="-12"/>
+				<text y="-24 db" text="-24"/>
+				<text y="-36 db" text="-36"/>
+				<text y="-48 db" text="-48"/>
+				<text y="-60 db" text="-60"/>
+				<text y="-72 db" text="graph.axis.out" valign="1"/>
+			</ui:attributes>
+
+			<ui:attributes y="0 db" halign="-1" valign="1">
+				<text x="-80" text="-100"/>
+				<text x="0 db" text="Pan" halign="1"/>
+				<text x="100" text="100"/>
+			</ui:attributes>
+		</graph>
+
 		<cgroup id="lsel" text="Delay lines: " ipadding="0">
 			<!-- 4 groups -->
 			<ui:for id="g" first="0" last="3">
