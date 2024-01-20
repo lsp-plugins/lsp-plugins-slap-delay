@@ -119,6 +119,7 @@ namespace lsp
                 plug::IPort        *pTempo;         // Tempo
                 plug::IPort        *pSync;          // Sync tempo
                 plug::IPort        *pRamping;       // Ramping mode
+                plug::IPort        *pCurrentLine;   // Current delay line (processor)
 
                 uint8_t            *vData;          // Allocated data
 
