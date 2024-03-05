@@ -25,7 +25,7 @@
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MAJOR       1
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MINOR       0
-#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       17
+#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       18
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION  \
     LSP_MODULE_VERSION( \
@@ -168,6 +168,8 @@ namespace lsp
             LSP_LV2_URI("slap_delay_mono"),
             LSP_LV2UI_URI("slap_delay_mono"),
             "gt0d",
+            LSP_VST3_UID("sd16m   gt0d"),
+            LSP_VST3UI_UID("sd16m   gt0d"),
             LSP_LADSPA_SLAP_DELAY_BASE + 0,
             LSP_LADSPA_URI("slap_delay_mono"),
             LSP_CLAP_URI("slap_delay_mono"),
@@ -193,6 +195,8 @@ namespace lsp
             LSP_LV2_URI("slap_delay_stereo"),
             LSP_LV2UI_URI("slap_delay_stereo"),
             "0xxj",
+            LSP_VST3_UID("sd16s   0xxj"),
+            LSP_VST3UI_UID("sd16s   0xxj"),
             LSP_LADSPA_SLAP_DELAY_BASE + 1,
             LSP_LADSPA_URI("slap_delay_stereo"),
             LSP_CLAP_URI("slap_delay_stereo"),
