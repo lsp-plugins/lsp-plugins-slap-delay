@@ -3,7 +3,7 @@
 	    :s0 or :s1 or :s2 or :s3 or :s4 or :s5 or :s6 or :s7 or :s8 or :s9 or :s10 or :s11 or :s12 or :s13 or :s14 or :s15"/>
 	<vbox spacing="4">
 		<group text="groups.chan.master" ipadding="0" spacing="0">
-			<grid rows="4" cols="17" bg.color="bg_schema">
+			<grid rows="4" cols="18" bg.color="bg_schema">
 				<!-- r1 -->
 
 				<label text="labels.temperature" pad.h="6" pad.v="4" vreduce="true"/>
@@ -21,6 +21,7 @@
 				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 				<label text="labels.signal.dry" pad.h="6" pad.v="4" vreduce="true"/>
 				<label text="labels.signal.wet" pad.h="6" pad.v="4" vreduce="true"/>
+				<label text="labels.signal.drywet" pad.h="6" pad.v="4" vreduce="true"/>
 				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 				<label text="labels.output" pad.h="6" pad.v="4" vreduce="true"/>
 
@@ -32,7 +33,7 @@
 					<hsep/>
 					<hsep/>
 					<cell cols="2"><hsep/></cell>
-					<cell cols="2"><hsep/></cell>
+					<cell cols="3"><hsep/></cell>
 					<hsep/>
 				</ui:with>
 
@@ -56,6 +57,7 @@
 					<knob id="pr_in" scolor="right"/>
 					<knob id="dry" scolor="dry"/>
 					<knob id="wet" scolor="wet"/>
+					<knob id="drywet" scolor="drywet"/>
 					<knob id="g_out"/>
 				</ui:with>
 
@@ -79,6 +81,7 @@
 						<value id="wet" same_line="true" width="48"/>
 						<button id="wm" size="10" text="labels.mute" ui:inject="Button_red"/>
 					</vbox>
+					<value id="drywet" width="48"/>
 					<value id="g_out"/>
 				</ui:with>
 			</grid>

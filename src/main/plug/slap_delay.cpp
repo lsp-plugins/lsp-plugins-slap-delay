@@ -114,9 +114,10 @@ namespace lsp
             pBypass         = NULL;
             pTemp           = NULL;
             pDry            = NULL;
-            pWet            = NULL;
             pDryMute        = NULL;
+            pWet            = NULL;
             pWetMute        = NULL;
+            pDryWet         = NULL;
             pOutGain        = NULL;
             pMono           = NULL;
             pPred           = NULL;
@@ -231,6 +232,7 @@ namespace lsp
             BIND_PORT(pDryMute);
             BIND_PORT(pWet);
             BIND_PORT(pWetMute);
+            BIND_PORT(pDryWet);
             BIND_PORT(pMono);
             BIND_PORT(pOutGain);
 
@@ -301,8 +303,12 @@ namespace lsp
         void slap_delay::update_settings()
         {
             float out_gain      = pOutGain->value();
-            float dry_gain      = (pDryMute->value() >= 0.5f) ? 0.0f : pDry->value() * out_gain;
-            float wet_gain      = (pWetMute->value() >= 0.5f) ? 0.0f : pWet->value() * out_gain;
+            float g_dry         = (pDryMute->value() >= 0.5f) ? 0.0f : pDry->value();
+            float g_wet         = (pWetMute->value() >= 0.5f) ? 0.0f : pWet->value();
+            float drywet        = pDryWet->value() * 0.01f;
+            float dry_gain      = (g_dry * drywet + 1.0f - drywet) * out_gain;
+            float wet_gain      = g_wet * drywet * out_gain;
+
             float d_delay       = 1.0f / dspu::sound_speed(pTemp->value()); // 1 / ss [m/s] = d_delay [s/m]
             float p_delay       = pPred->value(); // Pre-delay value
             float stretch       = pStretch->value() * 0.01;
@@ -712,9 +718,10 @@ namespace lsp
             v->write("pBypass", pBypass);
             v->write("pTemp", pTemp);
             v->write("pDry", pDry);
-            v->write("pWet", pWet);
             v->write("pDryMute", pDryMute);
+            v->write("pWet", pWet);
             v->write("pWetMute", pWetMute);
+            v->write("pDryWet", pDryWet);
             v->write("pOutGain", pOutGain);
             v->write("pMono", pMono);
             v->write("pPred", pPred);

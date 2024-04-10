@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2021 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2021 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -79,6 +79,7 @@ namespace lsp
             SWITCH("dm", "Dry mute", 0.0f), \
             WET_GAIN(GAIN_AMP_0_DB), \
             SWITCH("wm", "Wet mute", 0.0f), \
+            DRYWET(100.0f), \
             SWITCH("mono", "Mono output", 0.0f), \
             OUT_GAIN
 

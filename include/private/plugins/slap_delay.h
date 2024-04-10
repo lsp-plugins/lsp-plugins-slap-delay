@@ -109,9 +109,10 @@ namespace lsp
                 plug::IPort        *pBypass;        // Bypass
                 plug::IPort        *pTemp;          // Temperature
                 plug::IPort        *pDry;           // Dry signal amount
-                plug::IPort        *pWet;           // Wet signal amount
                 plug::IPort        *pDryMute;       // Dry mute
+                plug::IPort        *pWet;           // Wet signal amount
                 plug::IPort        *pWetMute;       // Wet mute
+                plug::IPort        *pDryWet;        // Dry/Wet balance
                 plug::IPort        *pOutGain;       // Output gain
                 plug::IPort        *pMono;          // Mono output
                 plug::IPort        *pPred;          // Pre-delay
