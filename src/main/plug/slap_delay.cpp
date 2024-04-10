@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2023 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2023 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -24,21 +24,15 @@
 #include <lsp-plug.in/dsp/dsp.h>
 #include <lsp-plug.in/dsp-units/units.h>
 #include <lsp-plug.in/plug-fw/meta/func.h>
+#include <lsp-plug.in/shared/debug.h>
 
 #include <private/plugins/slap_delay.h>
-
-#define BUFFER_SIZE             4096
-#define CONV_RANK               10
 
 namespace lsp
 {
     namespace plugins
     {
-        static plug::IPort *TRACE_PORT(plug::IPort *p)
-        {
-            lsp_trace("  port id=%s", (p)->metadata()->id);
-            return p;
-        }
+        static constexpr size_t BUFFER_SIZE = 0x1000;
 
         //---------------------------------------------------------------------
         // Plugin factory
@@ -150,14 +144,12 @@ namespace lsp
 
             // Allocate buffers
             size_t alloc    = BUFFER_SIZE * 3;
-            vData           = new uint8_t[alloc * sizeof(float) + DEFAULT_ALIGN];
-            if (vData == NULL)
+            float *ptr      = alloc_aligned<float>(vData, alloc * sizeof(float), DEFAULT_ALIGN);
+            if (ptr == NULL)
                 return;
-            float *ptr      = reinterpret_cast<float *>(align_ptr(vData, DEFAULT_ALIGN));
 
             // Remember pointers
-            vTemp           = ptr;
-            ptr            += BUFFER_SIZE;
+            vTemp           = advance_ptr<float>(ptr, BUFFER_SIZE);
 
             // Initialize inputs
             for (size_t i=0; i<nInputs; ++i)
@@ -174,8 +166,7 @@ namespace lsp
 
                 c->vOut             = NULL;
                 c->pOut             = NULL;
-                c->vRender          = ptr;
-                ptr                += BUFFER_SIZE;
+                c->vRender          = advance_ptr<float>(ptr, BUFFER_SIZE);
             }
 
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
@@ -205,7 +196,7 @@ namespace lsp
 
                 for (size_t j=0; j<2; ++j)
                 {
-                    p->vDelay[j].sEqualizer.init(meta::slap_delay_metadata::EQ_BANDS + 2, CONV_RANK);
+                    p->vDelay[j].sEqualizer.init(meta::slap_delay_metadata::EQ_BANDS + 2, 0);
                     p->vDelay[j].sEqualizer.set_mode(dspu::EQM_IIR);
                 }
             }
@@ -217,58 +208,58 @@ namespace lsp
 
             lsp_trace("Binding audio ports");
             for (size_t i=0; i<nInputs; ++i)
-                vInputs[i].pIn  = TRACE_PORT(ports[port_id++]);
+                BIND_PORT(vInputs[i].pIn);
 
             for (size_t i=0; i<2; ++i)
-                vChannels[i].pOut   = TRACE_PORT(ports[port_id++]);
+                BIND_PORT(vChannels[i].pOut);
 
             // Bind common ports
             lsp_trace("Binding common ports");
-            pBypass         = TRACE_PORT(ports[port_id++]);
-            TRACE_PORT(ports[port_id++]); // Skip delay selector
-            pTemp           = TRACE_PORT(ports[port_id++]);
-            pPred           = TRACE_PORT(ports[port_id++]);
-            pStretch        = TRACE_PORT(ports[port_id++]);
-            pTempo          = TRACE_PORT(ports[port_id++]);
-            pSync           = TRACE_PORT(ports[port_id++]);
-            pRamping        = TRACE_PORT(ports[port_id++]);
+            BIND_PORT(pBypass);
+            SKIP_PORT("Delay selector"); // Skip delay selector
+            BIND_PORT(pTemp);
+            BIND_PORT(pPred);
+            BIND_PORT(pStretch);
+            BIND_PORT(pTempo);
+            BIND_PORT(pSync);
+            BIND_PORT(pRamping);
 
             for (size_t i=0; i<nInputs; ++i)
-                vInputs[i].pPan     = TRACE_PORT(ports[port_id++]);
+                BIND_PORT(vInputs[i].pPan);
 
-            pDry            = TRACE_PORT(ports[port_id++]);
-            pDryMute        = TRACE_PORT(ports[port_id++]);
-            pWet            = TRACE_PORT(ports[port_id++]);
-            pWetMute        = TRACE_PORT(ports[port_id++]);
-            pMono           = TRACE_PORT(ports[port_id++]);
-            pOutGain        = TRACE_PORT(ports[port_id++]);
+            BIND_PORT(pDry);
+            BIND_PORT(pDryMute);
+            BIND_PORT(pWet);
+            BIND_PORT(pWetMute);
+            BIND_PORT(pMono);
+            BIND_PORT(pOutGain);
 
             // Bind processor ports
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
             {
                 processor_t *p      = &vProcessors[i];
 
-                p->pMode            = TRACE_PORT(ports[port_id++]);
+                BIND_PORT(p->pMode);
                 for (size_t j=0; j<nInputs; ++j)
-                    p->pPan[j]          = TRACE_PORT(ports[port_id++]);
+                    BIND_PORT(p->pPan[j]);
 
-                p->pSolo            = TRACE_PORT(ports[port_id++]);
-                p->pMute            = TRACE_PORT(ports[port_id++]);
-                p->pPhase           = TRACE_PORT(ports[port_id++]);
-                p->pTime            = TRACE_PORT(ports[port_id++]);
-                p->pDistance        = TRACE_PORT(ports[port_id++]);
-                p->pFrac            = TRACE_PORT(ports[port_id++]);
-                p->pDenom           = TRACE_PORT(ports[port_id++]);
-                p->pEq              = TRACE_PORT(ports[port_id++]);
-                p->pLowCut          = TRACE_PORT(ports[port_id++]);
-                p->pLowFreq         = TRACE_PORT(ports[port_id++]);
-                p->pHighCut         = TRACE_PORT(ports[port_id++]);
-                p->pHighFreq        = TRACE_PORT(ports[port_id++]);
+                BIND_PORT(p->pSolo);
+                BIND_PORT(p->pMute);
+                BIND_PORT(p->pPhase);
+                BIND_PORT(p->pTime);
+                BIND_PORT(p->pDistance);
+                BIND_PORT(p->pFrac);
+                BIND_PORT(p->pDenom);
+                BIND_PORT(p->pEq);
+                BIND_PORT(p->pLowCut);
+                BIND_PORT(p->pLowFreq);
+                BIND_PORT(p->pHighCut);
+                BIND_PORT(p->pHighFreq);
 
                 for (size_t j=0; j<meta::slap_delay_metadata::EQ_BANDS; ++j)
-                    p->pFreqGain[j]     = TRACE_PORT(ports[port_id++]);
+                    BIND_PORT(p->pFreqGain[j]);
 
-                p->pGain            = TRACE_PORT(ports[port_id++]);
+                BIND_PORT(p->pGain);
             }
         }
 
@@ -297,11 +288,7 @@ namespace lsp
                 c->vDelay[1].sEqualizer.destroy();
             }
 
-            if (vData != NULL)
-            {
-                delete [] vData;
-                vData       = NULL;
-            }
+            free_aligned(vData);
 
             vTemp       = NULL;
         }
@@ -529,9 +516,7 @@ namespace lsp
             for (size_t k=0; k < samples; )
             {
                 // Process input data
-                size_t to_do        = samples - k;
-                if (to_do > BUFFER_SIZE)
-                    to_do               = BUFFER_SIZE;
+                size_t to_do        = lsp_min(samples - k, BUFFER_SIZE);
                 to_do               = vInputs[0].sBuffer.append(vInputs[0].vIn, to_do);
 
                 if (nInputs > 1)

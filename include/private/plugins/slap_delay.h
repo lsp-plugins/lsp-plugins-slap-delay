@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2023 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2023 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -127,7 +127,12 @@ namespace lsp
 
             public:
                 slap_delay(const meta::plugin_t *metadata);
+                slap_delay(const slap_delay &) = delete;
+                slap_delay(slap_delay &&) = delete;
                 virtual ~slap_delay() override;
+
+                slap_delay & operator = (const slap_delay &) = delete;
+                slap_delay & operator = (slap_delay &&) = delete;
 
             public:
                 virtual void        init(plug::IWrapper *wrapper, plug::IPort **ports) override;
