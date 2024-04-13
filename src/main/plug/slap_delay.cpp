@@ -362,43 +362,13 @@ namespace lsp
             {
                 processor_t *p      = &vProcessors[i];
 
-                // Calculate delay gain
-                float delay_gain    = (p->pMute->value() >= 0.5f) ? 0.0f : p->pGain->value() * wet_gain;
-                if ((has_solo) && (p->pSolo->value() < 0.5f))
-                    delay_gain          = 0.0f;
-                if (p->pPhase->value() >= 0.5f)
-                    delay_gain          = -delay_gain;
-
-                const float feedback    = p->pFeedback->value();
-
-                // Apply panning parameters
-                if (nInputs == 1)
-                {
-                    float pan               = p->pPan[0]->value();
-                    p->vDelay[0].fGain[0]   = ((100.0f - pan) * 0.005f) * delay_gain;
-                    p->vDelay[0].fGain[1]   = ((100.0f + pan) * 0.005f) * delay_gain;
-                    p->vDelay[0].fFeedback  = feedback;
-                    p->vDelay[1].fGain[0]   = 0.0f;
-                    p->vDelay[1].fGain[1]   = 0.0f;
-                }
-                else
-                {
-                    float pan_l             = p->pPan[0]->value();
-                    float pan_r             = p->pPan[1]->value();
-
-                    p->vDelay[0].fGain[0]   = (100.0f - pan_l) * 0.005f * delay_gain;
-                    p->vDelay[0].fGain[1]   = (100.0f - pan_r) * 0.005f * delay_gain;
-                    p->vDelay[0].fFeedback  = feedback;
-                    p->vDelay[1].fGain[0]   = (100.0f + pan_l) * 0.005f * delay_gain;
-                    p->vDelay[1].fGain[1]   = (100.0f + pan_r) * 0.005f * delay_gain;
-                    p->vDelay[1].fFeedback  = feedback;
-                }
-
                 // Determine mode
                 bool eq_on          = p->pEq->value() >= 0.5f;
                 bool low_on         = p->pLowCut->value() >= 0.5f;
                 bool high_on        = p->pHighCut->value() >= 0.5f;
                 dspu::equalizer_mode_t eq_mode = (eq_on || low_on || high_on) ? dspu::EQM_IIR : dspu::EQM_BYPASS;
+
+                size_t old_mode     = p->nMode;
                 p->nMode            = p->pMode->value();
 
                 if (p->nMode == meta::slap_delay_metadata::OP_MODE_TIME)
@@ -424,6 +394,46 @@ namespace lsp
 
                 lsp_trace("p[%d].nDelay     = %d", int(i), int(p->nDelay));
                 lsp_trace("p[%d].nNewDelay  = %d", int(i), int(p->nNewDelay));
+
+                // Calculate delay gain
+                float delay_gain    = (p->pMute->value() >= 0.5f) ? 0.0f : p->pGain->value() * wet_gain;
+                if ((has_solo) && (p->pSolo->value() < 0.5f))
+                    delay_gain          = 0.0f;
+                if (p->pPhase->value() >= 0.5f)
+                    delay_gain          = -delay_gain;
+
+                const float feedback    = p->pFeedback->value();
+
+                // Apply panning parameters
+                if (nInputs == 1)
+                {
+                    float pan               = p->pPan[0]->value();
+                    p->vDelay[0].fGain[0]   = ((100.0f - pan) * 0.005f) * delay_gain;
+                    p->vDelay[0].fGain[1]   = ((100.0f + pan) * 0.005f) * delay_gain;
+                    p->vDelay[0].fFeedback  = feedback;
+                    p->vDelay[1].fGain[0]   = 0.0f;
+                    p->vDelay[1].fGain[1]   = 0.0f;
+                    if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
+                        p->vDelay[0].sBuffer.clear();
+                }
+                else
+                {
+                    float pan_l             = p->pPan[0]->value();
+                    float pan_r             = p->pPan[1]->value();
+
+                    p->vDelay[0].fGain[0]   = (100.0f - pan_l) * 0.005f * delay_gain;
+                    p->vDelay[0].fGain[1]   = (100.0f - pan_r) * 0.005f * delay_gain;
+                    p->vDelay[0].fFeedback  = feedback;
+                    p->vDelay[1].fGain[0]   = (100.0f + pan_l) * 0.005f * delay_gain;
+                    p->vDelay[1].fGain[1]   = (100.0f + pan_r) * 0.005f * delay_gain;
+                    p->vDelay[1].fFeedback  = feedback;
+
+                    if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
+                    {
+                        p->vDelay[0].sBuffer.clear();
+                        p->vDelay[1].sBuffer.clear();
+                    }
+                }
 
                 // Update equalizer settings
                 for (size_t j=0; j<2; ++j)
@@ -577,7 +587,7 @@ namespace lsp
 
             for (size_t offset=0; offset < samples; ++offset)
             {
-                const size_t vdelay = delay + (offset + step);
+                const size_t vdelay = delay + (offset + step)*delta;
                 float *head         = mp->sBuffer.head();
                 float *tail         = mp->sBuffer.tail(vdelay);
 
@@ -586,8 +596,6 @@ namespace lsp
 
                 mp->sBuffer.advance(1);
             }
-
-            mp->sBuffer.advance(samples);
         }
 
         void slap_delay::process(size_t samples)
