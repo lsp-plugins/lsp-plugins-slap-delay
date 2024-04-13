@@ -24,7 +24,7 @@
 
 #include <lsp-plug.in/plug-fw/plug.h>
 #include <lsp-plug.in/dsp-units/ctl/Bypass.h>
-#include <lsp-plug.in/dsp-units/util/ShiftBuffer.h>
+#include <lsp-plug.in/dsp-units/util/RawRingBuffer.h>
 #include <lsp-plug.in/dsp-units/filters/Equalizer.h>
 
 #include <private/meta/slap_delay.h>
@@ -48,9 +48,11 @@ namespace lsp
 
                 typedef struct mono_processor_t
                 {
-                    dspu::Equalizer         sEqualizer;
+                    dspu::RawRingBuffer     sBuffer;    // Ring buffer for the delay data
+                    dspu::Equalizer         sEqualizer; // Delay equalizer
 
                     float                   fGain[2];   // Amount of gain for left and right input channels
+                    float                   fFeedback;  // Feedback gain
                 } mono_processor_t;
 
                 typedef struct processor_t
@@ -68,6 +70,7 @@ namespace lsp
                     plug::IPort            *pFrac;      // Fraction
                     plug::IPort            *pDenom;     // Denominator
                     plug::IPort            *pPan[2];    // Pan of left and right input channels
+                    plug::IPort            *pFeedback;  // Feedback amount
                     plug::IPort            *pGain;      // Gain of the delay line
                     plug::IPort            *pLowCut;    // Low-cut flag
                     plug::IPort            *pLowFreq;   // Low-cut frequency
@@ -84,13 +87,13 @@ namespace lsp
                     dspu::Bypass            sBypass;    // Bypass
                     float                   fGain[2];   // Panning gain
                     float                  *vRender;    // Rendering buffer
+                    float                  *vTemp;      // Temporary buffer for processing
                     float                  *vOut;       // Output buffer
                     plug::IPort            *pOut;       // Output port
                 } channel_t;
 
                 typedef struct input_t
                 {
-                    dspu::ShiftBuffer       sBuffer;    // Shift buffer of input data
                     float                  *vIn;        // Input data
                     plug::IPort            *pIn;        // Input port
                     plug::IPort            *pPan;       // Panning
@@ -103,7 +106,6 @@ namespace lsp
                 processor_t         vProcessors[meta::slap_delay_metadata::MAX_PROCESSORS];    // Processors
                 channel_t           vChannels[2];
 
-                float              *vTemp;          // Temporary buffer for processing
                 bool                bMono;          // Mono output flag
 
                 plug::IPort        *pBypass;        // Bypass
@@ -125,6 +127,16 @@ namespace lsp
 
             protected:
                 void                do_destroy();
+                static void         process_const_delay(
+                    float *dst, const float *src,
+                    mono_processor_t *mp,
+                    size_t delay, size_t samples);
+
+                static void         process_varying_delay(
+                    float *dst, const float *src,
+                    mono_processor_t *mp,
+                    size_t delay, float delta,
+                    size_t step, size_t samples);
 
             public:
                 slap_delay(const meta::plugin_t *metadata);

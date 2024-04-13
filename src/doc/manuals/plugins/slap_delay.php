@@ -64,6 +64,7 @@
 	<li><b>Panorama Left</b> - the panning applied to the left channel of the input for this delay line.</li>
 	<li><b>Panorama Right</b> - the panning applied to the right channel of the input for this delay line.</li>
 	<?php }?>
+	<li><b>Feedback</b> - the amount of feedback added to the signal.</li>
 	<li><b>Gain</b> - the overall gain of this delay line.</li>
 	<li><b>Filters</b> - allows to enable different filters:</li>
 	<ul>

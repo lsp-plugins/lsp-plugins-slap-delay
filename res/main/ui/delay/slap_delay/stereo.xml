@@ -90,7 +90,7 @@
 		<cgroup id="lsel" text="Delay lines: " ipadding="0">
 			<!-- 4 groups -->
 			<ui:for id="g" first="0" last="3">
-				<grid rows="22" cols="22" spacing="0">
+				<grid rows="22" cols="24" spacing="0">
 
 					<cell rows="2"><label text="labels.specials.num" hreduce="true" pad.h="6"/></cell>
 					<cell rows="22"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
@@ -99,6 +99,8 @@
 					<cell rows="2"><label text="labels.delay"/></cell>
 					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 					<cell cols="2"><label text="labels.panorama:pc" pad.v="4"/></cell>
+					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<label text="labels.feedback" pad.h="2" hreduce="true"/>
 					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 					<label text="labels.gain"/>
 					<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
@@ -114,6 +116,7 @@
 						<label text="labels.chan.left"/>
 						<label text="labels.chan.right"/>
 						<label text="labels.units.:db"/>
+						<label text="labels.units.:db"/>
 						<label text="labels.units.:hz"/>
 						<label text="labels.flt.subs"/>
 						<label text="labels.flt.bass"/>
@@ -127,7 +130,7 @@
 						<!-- Row 1 -->
 						<ui:with bg.color="bg" pad.v="2" vreduce="true">
 							<hsep/>
-							<cell cols="8"><hsep/></cell>
+							<cell cols="10"><hsep/></cell>
 							<hsep/>
 							<cell cols="9"><hsep/></cell>
 						</ui:with>
@@ -151,6 +154,8 @@
 							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
 							<knob id="pl${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'left'"/>
 							<knob id="pr${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'right'"/>
+							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
+							<knob id="dfb${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'kscale'"/>
 							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
 							<knob id="dg${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'kscale'"/>
 							<cell rows="2" fill="false">
@@ -201,6 +206,7 @@
 							<ui:attributes detailed="false">
 								<value id="pl${i}"/>
 								<value id="pr${i}"/>
+								<value id="dfb${i}"/>
 								<value id="dg${i}"/>
 								<value id="flc${i}" bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? :const_bg_darken : 1.0"/>
 								<ui:with bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? :const_bg_darken : 1.0">
