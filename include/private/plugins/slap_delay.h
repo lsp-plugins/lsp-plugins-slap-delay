@@ -50,6 +50,7 @@ namespace lsp
                 {
                     dspu::RawRingBuffer     sBuffer;    // Ring buffer for the delay data
                     dspu::Equalizer         sEqualizer; // Delay equalizer
+                    bool                    bClear;     // Clear flag
 
                     float                   fGain[2];   // Amount of gain for left and right input channels
                     float                   fFeedback;  // Feedback gain

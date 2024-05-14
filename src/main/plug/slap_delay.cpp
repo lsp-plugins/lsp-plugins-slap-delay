@@ -210,6 +210,8 @@ namespace lsp
 
                     mp->sEqualizer.init(meta::slap_delay_metadata::EQ_BANDS + 2, 0);
                     mp->sEqualizer.set_mode(dspu::EQM_IIR);
+
+                    mp->bClear          = true;
                 }
             }
 
@@ -414,7 +416,10 @@ namespace lsp
                     p->vDelay[1].fGain[0]   = 0.0f;
                     p->vDelay[1].fGain[1]   = 0.0f;
                     if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
-                        p->vDelay[0].sBuffer.clear();
+                    {
+                        p->vDelay[0].bClear     = true;
+                        p->vDelay[0].sBuffer.reset();
+                    }
                 }
                 else
                 {
@@ -430,8 +435,11 @@ namespace lsp
 
                     if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
                     {
-                        p->vDelay[0].sBuffer.clear();
-                        p->vDelay[1].sBuffer.clear();
+                        p->vDelay[0].bClear     = true;
+                        p->vDelay[1].bClear     = true;
+
+                        p->vDelay[0].sBuffer.reset();
+                        p->vDelay[1].sBuffer.reset();
                     }
                 }
 
@@ -513,8 +521,8 @@ namespace lsp
             size_t max_delay    = lsp_max(time_delay, dist_delay, tempo_delay);
             size_t buf_size     = align_size(max_delay + BUFFER_SIZE, BUFFER_SIZE);
 
-            lsp_trace("time_delay=%d, dist_delay=%d, tempo_delay=%d, max_delay=%d, buf_size=%d",
-                int(time_delay), int(dist_delay), int(tempo_delay), int(max_delay), int(buf_size));
+//            lsp_trace("time_delay=%d, dist_delay=%d, tempo_delay=%d, max_delay=%d, buf_size=%d",
+//                int(time_delay), int(dist_delay), int(tempo_delay), int(max_delay), int(buf_size));
 
             // Initialize devices responsible for delay implementation
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
@@ -535,46 +543,72 @@ namespace lsp
             mono_processor_t *mp,
             size_t delay, size_t samples)
         {
-            const float feed    = mp->fFeedback;
+            const float feed    = (delay > 0) ? mp->fFeedback : 0.0f;
+            float *head         = mp->sBuffer.head();
+            bool clear          = mp->bClear;
 
             // For very short delays there is no profit from dsp functions
             if (delay < DELAY_PACKET_PROCESSING)
             {
-                float *head         = mp->sBuffer.head();
                 float *tail         = mp->sBuffer.tail(delay);
                 float *begin        = mp->sBuffer.begin();
                 float *end          = mp->sBuffer.end();
 
                 for (size_t offset=0; offset < samples; ++offset)
                 {
-                    *head               = src[offset] + (*tail) * feed;
-                    dst[offset]         = *tail;
+                    if ((clear) && (tail >= head))
+                    {
+                        *head               = src[offset];
+                        dst[offset]         = 0.0f;
+                    }
+                    else
+                    {
+                        *head               = src[offset] + (*tail) * feed;
+                        dst[offset]         = *tail;
+                    }
 
                     ++head;
                     ++tail;
                     if (head >= end)
+                    {
                         head                = begin;
+                        clear               = false;
+                    }
                     if (tail >= end)
                         tail                = begin;
                 }
 
                 mp->sBuffer.advance(samples);
+                mp->bClear          = clear;
 
                 return;
             }
 
+            // Process large blocks
             for (size_t offset=0; offset < samples; )
             {
                 const size_t to_do  = lsp_min(samples - offset, mp->sBuffer.remaining(delay), delay);
-                float *head         = mp->sBuffer.head();
                 float *tail         = mp->sBuffer.tail(delay);
 
-                dsp::fmadd_k4(head, &src[offset], tail, feed, to_do);
-                dsp::copy(&dst[offset], tail, to_do);
+                if ((clear) && (tail >= head))
+                {
+                    dsp::copy(head, &src[offset], to_do);
+                    dsp::fill_zero(&dst[offset], to_do);
+                }
+                else
+                {
+                    dsp::fmadd_k4(head, &src[offset], tail, feed, to_do);
+                    dsp::copy(&dst[offset], tail, to_do);
+                }
 
-                mp->sBuffer.advance(to_do);
+                float *new_head     = mp->sBuffer.advance(to_do);
+                if (new_head < head)
+                    clear               = false;
+                head                = new_head;
                 offset             += to_do;
             }
+
+            mp->bClear          = clear;
         }
 
         void slap_delay::process_varying_delay(
@@ -583,19 +617,34 @@ namespace lsp
             size_t delay, float delta,
             size_t step, size_t samples)
         {
-            const float feed    = mp->fFeedback;
+            float *head         = mp->sBuffer.head();
+            bool clear          = mp->bClear;
 
             for (size_t offset=0; offset < samples; ++offset)
             {
                 const size_t vdelay = delay + (offset + step)*delta;
-                float *head         = mp->sBuffer.head();
+                const float feed    = (vdelay > 0) ? mp->fFeedback : 0.0f;
                 float *tail         = mp->sBuffer.tail(vdelay);
 
-                *head               = src[offset] + (*tail) * feed;
-                dst[offset]         = *tail;
+                if ((clear) && (tail >= head))
+                {
+                    *head               = src[offset];
+                    dst[offset]         = 0.0f;
+                }
+                else
+                {
+                    *head               = src[offset] + (*tail) * feed;
+                    dst[offset]         = *tail;
+                }
 
-                mp->sBuffer.advance(1);
+                // Update head
+                float *new_head     = mp->sBuffer.advance(1);
+                if (new_head < head)
+                    clear               = false;
+                head                = new_head;
             }
+
+            mp->bClear          = clear;
         }
 
         void slap_delay::process(size_t samples)
