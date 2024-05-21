@@ -3,7 +3,7 @@
 	    :s0 or :s1 or :s2 or :s3 or :s4 or :s5 or :s6 or :s7 or :s8 or :s9 or :s10 or :s11 or :s12 or :s13 or :s14 or :s15"/>
 	<vbox spacing="4">
 		<group text="groups.chan.master" ipadding="0" spacing="0">
-			<grid rows="4" cols="17" bg.color="bg_schema">
+			<grid rows="4" cols="18" bg.color="bg_schema">
 				<!-- r1 -->
 
 				<label text="labels.temperature" pad.h="6" pad.v="4" vreduce="true"/>
@@ -21,6 +21,7 @@
 				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 				<label text="labels.signal.dry" pad.h="6" pad.v="4" vreduce="true"/>
 				<label text="labels.signal.wet" pad.h="6" pad.v="4" vreduce="true"/>
+				<label text="labels.signal.drywet" pad.h="6" pad.v="4" vreduce="true"/>
 				<cell rows="4"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 				<label text="labels.output" pad.h="6" pad.v="4" vreduce="true"/>
 
@@ -32,7 +33,7 @@
 					<hsep/>
 					<hsep/>
 					<cell cols="2"><hsep/></cell>
-					<cell cols="2"><hsep/></cell>
+					<cell cols="3"><hsep/></cell>
 					<hsep/>
 				</ui:with>
 
@@ -56,6 +57,7 @@
 					<knob id="pr_in" scolor="right"/>
 					<knob id="dry" scolor="dry"/>
 					<knob id="wet" scolor="wet"/>
+					<knob id="drywet" scolor="drywet"/>
 					<knob id="g_out"/>
 				</ui:with>
 
@@ -79,6 +81,7 @@
 						<value id="wet" same_line="true" width="48"/>
 						<button id="wm" size="10" text="labels.mute" ui:inject="Button_red"/>
 					</vbox>
+					<value id="drywet" width="48"/>
 					<value id="g_out"/>
 				</ui:with>
 			</grid>
@@ -87,7 +90,7 @@
 		<cgroup id="lsel" text="Delay lines: " ipadding="0">
 			<!-- 4 groups -->
 			<ui:for id="g" first="0" last="3">
-				<grid rows="22" cols="22" spacing="0">
+				<grid rows="22" cols="24" spacing="0">
 
 					<cell rows="2"><label text="labels.specials.num" hreduce="true" pad.h="6"/></cell>
 					<cell rows="22"><vsep bg.color="bg" pad.h="2" pad.t="4" pad.b="0" hreduce="true"/></cell>
@@ -96,6 +99,8 @@
 					<cell rows="2"><label text="labels.delay"/></cell>
 					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 					<cell cols="2"><label text="labels.panorama:pc" pad.v="4"/></cell>
+					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
+					<label text="labels.feedback" pad.h="2" hreduce="true"/>
 					<cell rows="2"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
 					<label text="labels.gain"/>
 					<cell rows="22"><vsep bg.color="bg" pad.h="2" hreduce="true"/></cell>
@@ -111,6 +116,7 @@
 						<label text="labels.chan.left"/>
 						<label text="labels.chan.right"/>
 						<label text="labels.units.:db"/>
+						<label text="labels.units.:db"/>
 						<label text="labels.units.:hz"/>
 						<label text="labels.flt.subs"/>
 						<label text="labels.flt.bass"/>
@@ -124,7 +130,7 @@
 						<!-- Row 1 -->
 						<ui:with bg.color="bg" pad.v="2" vreduce="true">
 							<hsep/>
-							<cell cols="8"><hsep/></cell>
+							<cell cols="10"><hsep/></cell>
 							<hsep/>
 							<cell cols="9"><hsep/></cell>
 						</ui:with>
@@ -148,6 +154,8 @@
 							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
 							<knob id="pl${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'left'"/>
 							<knob id="pr${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'right'"/>
+							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
+							<knob id="dfb${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'kscale'"/>
 							<cell rows="2"><void bg.color="bg_schema" width.max="4" hreduce="true"/></cell>
 							<knob id="dg${i}" pad.h="6" scolor="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ?  'cycle_inactive' : 'kscale'"/>
 							<cell rows="2" fill="false">
@@ -198,6 +206,7 @@
 							<ui:attributes detailed="false">
 								<value id="pl${i}"/>
 								<value id="pr${i}"/>
+								<value id="dfb${i}"/>
 								<value id="dg${i}"/>
 								<value id="flc${i}" bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:lfc${i} ? :const_bg_darken : 1.0"/>
 								<ui:with bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? 0.75 : 1.0" bg.bright="(!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i})) or !:eq${i} ? :const_bg_darken : 1.0">

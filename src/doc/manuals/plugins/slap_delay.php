@@ -42,10 +42,11 @@
 	<li><b>Pan Left</b> - the panning applied to the left channel of the original (dry) signal.</li>
 	<li><b>Pan Right</b> - the panning applied to the right channel of the original (dry) signal.</li>
 	<?php }?>
-	<li><b>Dry</b> - The amount of dry (unprocessed) signal.</li>
-	<li><b>Dry Mute</b> - Mute the dry (unprocessed) signal.</li>
-	<li><b>Wet</b> - The amount of wet (processed) signal.</li>
-	<li><b>Wet Mute</b> - Mute the wet (processed) signal.</li>
+	<li><b>Dry</b> - the amount of dry (unprocessed) signal.</li>
+	<li><b>Dry Mute</b> - mute the dry (unprocessed) signal.</li>
+	<li><b>Wet</b> - the amount of wet (processed) signal.</li>
+	<li><b>Wet Mute</b> - mute the wet (processed) signal.</li>
+	<li><b>Dry/Wet</b> - the balance between unprocessed (dry) signal and mixed signal (see Dry, Dry Mute, Wet, Wet Mute controls).</li>
 	<li><b>Output</b> - The overall output amplification of the signal.</li>
 </ul>
 
@@ -63,6 +64,7 @@
 	<li><b>Panorama Left</b> - the panning applied to the left channel of the input for this delay line.</li>
 	<li><b>Panorama Right</b> - the panning applied to the right channel of the input for this delay line.</li>
 	<?php }?>
+	<li><b>Feedback</b> - the amount of feedback added to the signal.</li>
 	<li><b>Gain</b> - the overall gain of this delay line.</li>
 	<li><b>Filters</b> - allows to enable different filters:</li>
 	<ul>

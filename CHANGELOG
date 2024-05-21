@@ -2,6 +2,12 @@
 * RECENT CHANGES
 *******************************************************************************
 
+=== 1.0.19 ===
+* Implemented Dry/Wet balance knob.
+* Added feedback knob.
+* Implemented advanced internal buffer cleanup algorithm that does not cause high CPU load.
+* Updated build scripts and dependencies.
+
 === 1.0.18 ===
 * Updated build scripts and dependencies.
 

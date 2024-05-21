@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2021 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2021 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -25,7 +25,7 @@
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MAJOR       1
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MINOR       0
-#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       18
+#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       19
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION  \
     LSP_MODULE_VERSION( \
@@ -79,6 +79,7 @@ namespace lsp
             SWITCH("dm", "Dry mute", 0.0f), \
             WET_GAIN(GAIN_AMP_0_DB), \
             SWITCH("wm", "Wet mute", 0.0f), \
+            DRYWET(100.0f), \
             SWITCH("mono", "Mono output", 0.0f), \
             OUT_GAIN
 
@@ -102,6 +103,7 @@ namespace lsp
             LOG_CONTROL("fbm" #id, "Delay " #id " middle", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
             LOG_CONTROL("fbp" #id, "Delay " #id " presence", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
             LOG_CONTROL("fbt" #id, "Delay " #id " treble", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            AMP_GAIN1("dfb" #id, "Delay " #id " feedback", GAIN_AMP_M_INF_DB), \
             AMP_GAIN10("dg" #id, "Delay " #id " gain", GAIN_AMP_0_DB)
 
         #define SLAP_DELAY_PROCESSORS(pan) \

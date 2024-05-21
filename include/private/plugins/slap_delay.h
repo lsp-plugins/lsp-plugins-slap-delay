@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2023 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2023 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -24,7 +24,7 @@
 
 #include <lsp-plug.in/plug-fw/plug.h>
 #include <lsp-plug.in/dsp-units/ctl/Bypass.h>
-#include <lsp-plug.in/dsp-units/util/ShiftBuffer.h>
+#include <lsp-plug.in/dsp-units/util/RawRingBuffer.h>
 #include <lsp-plug.in/dsp-units/filters/Equalizer.h>
 
 #include <private/meta/slap_delay.h>
@@ -48,9 +48,12 @@ namespace lsp
 
                 typedef struct mono_processor_t
                 {
-                    dspu::Equalizer         sEqualizer;
+                    dspu::RawRingBuffer     sBuffer;    // Ring buffer for the delay data
+                    dspu::Equalizer         sEqualizer; // Delay equalizer
+                    bool                    bClear;     // Clear flag
 
                     float                   fGain[2];   // Amount of gain for left and right input channels
+                    float                   fFeedback;  // Feedback gain
                 } mono_processor_t;
 
                 typedef struct processor_t
@@ -68,6 +71,7 @@ namespace lsp
                     plug::IPort            *pFrac;      // Fraction
                     plug::IPort            *pDenom;     // Denominator
                     plug::IPort            *pPan[2];    // Pan of left and right input channels
+                    plug::IPort            *pFeedback;  // Feedback amount
                     plug::IPort            *pGain;      // Gain of the delay line
                     plug::IPort            *pLowCut;    // Low-cut flag
                     plug::IPort            *pLowFreq;   // Low-cut frequency
@@ -84,13 +88,13 @@ namespace lsp
                     dspu::Bypass            sBypass;    // Bypass
                     float                   fGain[2];   // Panning gain
                     float                  *vRender;    // Rendering buffer
+                    float                  *vTemp;      // Temporary buffer for processing
                     float                  *vOut;       // Output buffer
                     plug::IPort            *pOut;       // Output port
                 } channel_t;
 
                 typedef struct input_t
                 {
-                    dspu::ShiftBuffer       sBuffer;    // Shift buffer of input data
                     float                  *vIn;        // Input data
                     plug::IPort            *pIn;        // Input port
                     plug::IPort            *pPan;       // Panning
@@ -103,15 +107,15 @@ namespace lsp
                 processor_t         vProcessors[meta::slap_delay_metadata::MAX_PROCESSORS];    // Processors
                 channel_t           vChannels[2];
 
-                float              *vTemp;          // Temporary buffer for processing
                 bool                bMono;          // Mono output flag
 
                 plug::IPort        *pBypass;        // Bypass
                 plug::IPort        *pTemp;          // Temperature
                 plug::IPort        *pDry;           // Dry signal amount
-                plug::IPort        *pWet;           // Wet signal amount
                 plug::IPort        *pDryMute;       // Dry mute
+                plug::IPort        *pWet;           // Wet signal amount
                 plug::IPort        *pWetMute;       // Wet mute
+                plug::IPort        *pDryWet;        // Dry/Wet balance
                 plug::IPort        *pOutGain;       // Output gain
                 plug::IPort        *pMono;          // Mono output
                 plug::IPort        *pPred;          // Pre-delay
@@ -124,10 +128,25 @@ namespace lsp
 
             protected:
                 void                do_destroy();
+                static void         process_const_delay(
+                    float *dst, const float *src,
+                    mono_processor_t *mp,
+                    size_t delay, size_t samples);
+
+                static void         process_varying_delay(
+                    float *dst, const float *src,
+                    mono_processor_t *mp,
+                    size_t delay, float delta,
+                    size_t step, size_t samples);
 
             public:
                 slap_delay(const meta::plugin_t *metadata);
+                slap_delay(const slap_delay &) = delete;
+                slap_delay(slap_delay &&) = delete;
                 virtual ~slap_delay() override;
+
+                slap_delay & operator = (const slap_delay &) = delete;
+                slap_delay & operator = (slap_delay &&) = delete;
 
             public:
                 virtual void        init(plug::IWrapper *wrapper, plug::IPort **ports) override;
