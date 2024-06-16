@@ -41,6 +41,7 @@
 	<?php } else {?>
 	<li><b>Pan Left</b> - the panning applied to the left channel of the original (dry) signal.</li>
 	<li><b>Pan Right</b> - the panning applied to the right channel of the original (dry) signal.</li>
+	<li><b>Balance</b> - the balance between left and right channels of the original (dry) signal after panning.</li>
 	<?php }?>
 	<li><b>Dry</b> - the amount of dry (unprocessed) signal.</li>
 	<li><b>Dry Mute</b> - mute the dry (unprocessed) signal.</li>
@@ -63,6 +64,7 @@
 	<?php } else {?>
 	<li><b>Panorama Left</b> - the panning applied to the left channel of the input for this delay line.</li>
 	<li><b>Panorama Right</b> - the panning applied to the right channel of the input for this delay line.</li>
+	<li><b>Balance</b> - the balance between left and right channels of the input for this delay line after panning.</li>
 	<?php }?>
 	<li><b>Feedback</b> - the amount of feedback added to the signal.</li>
 	<li><b>Gain</b> - the overall gain of this delay line.</li>

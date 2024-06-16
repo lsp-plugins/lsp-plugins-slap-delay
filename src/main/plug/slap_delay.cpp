@@ -131,6 +131,7 @@ namespace lsp
             pDryWet         = NULL;
             pOutGain        = NULL;
             pMono           = NULL;
+            pBalance        = NULL;
             pPred           = NULL;
             pStretch        = NULL;
             pTempo          = NULL;
@@ -192,6 +193,7 @@ namespace lsp
                 p->pDistance        = NULL;
                 p->pPan[0]          = NULL;
                 p->pPan[1]          = NULL;
+                p->pBalance         = NULL;
                 p->pGain            = NULL;
                 p->pLowCut          = NULL;
                 p->pLowFreq         = NULL;
@@ -240,6 +242,8 @@ namespace lsp
 
             for (size_t i=0; i<nInputs; ++i)
                 BIND_PORT(vInputs[i].pPan);
+            if (nInputs > 1)
+                BIND_PORT(pBalance);
 
             BIND_PORT(pDry);
             BIND_PORT(pDryMute);
@@ -257,6 +261,8 @@ namespace lsp
                 BIND_PORT(p->pMode);
                 for (size_t j=0; j<nInputs; ++j)
                     BIND_PORT(p->pPan[j]);
+                if (nInputs > 1)
+                    BIND_PORT(p->pBalance);
 
                 BIND_PORT(p->pSolo);
                 BIND_PORT(p->pMute);
@@ -343,21 +349,26 @@ namespace lsp
 
             if (nInputs == 1)
             {
-                float pan               = vInputs[0].pPan->value();
-                vChannels[0].fGain[0]   = (100.0f - pan) * 0.005f * dry_gain;
+                const float gain        = 0.005f * dry_gain;
+                const float pan         = vInputs[0].pPan->value();
+                vChannels[0].fGain[0]   = (100.0f - pan) * gain;
                 vChannels[0].fGain[1]   = 0.0f;
-                vChannels[1].fGain[0]   = (100.0f + pan) * 0.005f * dry_gain;
+                vChannels[1].fGain[0]   = (100.0f + pan) * gain;
                 vChannels[1].fGain[1]   = 0.0f;
             }
             else
             {
-                float pan_l             = vInputs[0].pPan->value();
-                float pan_r             = vInputs[1].pPan->value();
+                const float gain        = 0.005f * dry_gain;
+                const float balance     = (pBalance != NULL) ? pBalance->value() * 0.01f : 0.0f;
+                const float bal_l       = gain * lsp_min(1.0f - balance, 1.0f);
+                const float bal_r       = gain * lsp_min(1.0f + balance, 1.0f);
+                const float pan_l       = vInputs[0].pPan->value();
+                const float pan_r       = vInputs[1].pPan->value();
 
-                vChannels[0].fGain[0]   = (100.0f - pan_l) * 0.005f * dry_gain;
-                vChannels[0].fGain[1]   = (100.0f - pan_r) * 0.005f * dry_gain;
-                vChannels[1].fGain[0]   = (100.0f + pan_l) * 0.005f * dry_gain;
-                vChannels[1].fGain[1]   = (100.0f + pan_r) * 0.005f * dry_gain;
+                vChannels[0].fGain[0]   = (100.0f - pan_l) * bal_l;
+                vChannels[0].fGain[1]   = (100.0f - pan_r) * bal_l;
+                vChannels[1].fGain[0]   = (100.0f + pan_l) * bal_r;
+                vChannels[1].fGain[1]   = (100.0f + pan_r) * bal_r;
             }
 
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
@@ -409,9 +420,10 @@ namespace lsp
                 // Apply panning parameters
                 if (nInputs == 1)
                 {
-                    float pan               = p->pPan[0]->value();
-                    p->vDelay[0].fGain[0]   = ((100.0f - pan) * 0.005f) * delay_gain;
-                    p->vDelay[0].fGain[1]   = ((100.0f + pan) * 0.005f) * delay_gain;
+                    const float gain        = 0.005f * delay_gain;
+                    const float pan         = p->pPan[0]->value();
+                    p->vDelay[0].fGain[0]   = (100.0f - pan) * gain;
+                    p->vDelay[0].fGain[1]   = (100.0f + pan) * gain;
                     p->vDelay[0].fFeedback  = feedback;
                     p->vDelay[1].fGain[0]   = 0.0f;
                     p->vDelay[1].fGain[1]   = 0.0f;
@@ -423,14 +435,18 @@ namespace lsp
                 }
                 else
                 {
-                    float pan_l             = p->pPan[0]->value();
-                    float pan_r             = p->pPan[1]->value();
+                    const float gain        = 0.005f * delay_gain;
+                    const float balance     = (p->pBalance != NULL) ? p->pBalance->value() : 0.0f;
+                    const float bal_l       = gain * lsp_min((100.0f - balance) * 0.01f, 1.0f);
+                    const float bal_r       = gain * lsp_min((100.0f + balance) * 0.01f, 1.0f);
+                    const float pan_l       = p->pPan[0]->value();
+                    const float pan_r       = p->pPan[1]->value();
 
-                    p->vDelay[0].fGain[0]   = (100.0f - pan_l) * 0.005f * delay_gain;
-                    p->vDelay[0].fGain[1]   = (100.0f - pan_r) * 0.005f * delay_gain;
+                    p->vDelay[0].fGain[0]   = (100.0f - pan_l) * bal_l;
+                    p->vDelay[0].fGain[1]   = (100.0f - pan_r) * bal_l;
                     p->vDelay[0].fFeedback  = feedback;
-                    p->vDelay[1].fGain[0]   = (100.0f + pan_l) * 0.005f * delay_gain;
-                    p->vDelay[1].fGain[1]   = (100.0f + pan_r) * 0.005f * delay_gain;
+                    p->vDelay[1].fGain[0]   = (100.0f + pan_l) * bal_r;
+                    p->vDelay[1].fGain[1]   = (100.0f + pan_r) * bal_r;
                     p->vDelay[1].fFeedback  = feedback;
 
                     if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
@@ -827,6 +843,7 @@ namespace lsp
                         v->write("pFrac", p->pFrac);
                         v->write("pDenom", p->pDenom);
                         v->writev("pPan", p->pPan, 2);
+                        v->write("pBalance", p->pBalance);
                         v->write("pFeedback", p->pFeedback);
                         v->write("pGain", p->pGain);
                         v->write("pLowCut", p->pLowCut);
@@ -871,6 +888,7 @@ namespace lsp
             v->write("pDryWet", pDryWet);
             v->write("pOutGain", pOutGain);
             v->write("pMono", pMono);
+            v->write("pBalance", pBalance);
             v->write("pPred", pPred);
             v->write("pStretch", pStretch);
             v->write("pTempo", pTempo);
