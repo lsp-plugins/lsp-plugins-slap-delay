@@ -71,6 +71,7 @@ namespace lsp
                     plug::IPort            *pFrac;      // Fraction
                     plug::IPort            *pDenom;     // Denominator
                     plug::IPort            *pPan[2];    // Pan of left and right input channels
+                    plug::IPort            *pBalance;   // The balance between left and right channels
                     plug::IPort            *pFeedback;  // Feedback amount
                     plug::IPort            *pGain;      // Gain of the delay line
                     plug::IPort            *pLowCut;    // Low-cut flag
@@ -119,6 +120,7 @@ namespace lsp
                 plug::IPort        *pOutGain;       // Output gain
                 plug::IPort        *pMono;          // Mono output
                 plug::IPort        *pPred;          // Pre-delay
+                plug::IPort        *pBalance;       // Balance
                 plug::IPort        *pStretch;       // Time stretch
                 plug::IPort        *pTempo;         // Tempo
                 plug::IPort        *pSync;          // Sync tempo

@@ -25,7 +25,7 @@
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MAJOR       1
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MINOR       0
-#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       20
+#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       21
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION  \
     LSP_MODULE_VERSION( \
@@ -63,7 +63,8 @@ namespace lsp
 
         #define SLAP_PAN_STEREO(id, label) \
             PAN_CTL("pl" id, label " left channel panorama", -100.0f), \
-            PAN_CTL("pr" id, label " right channel panorama", 100.0f)
+            PAN_CTL("pr" id, label " right channel panorama", 100.0f), \
+            PAN_CTL("bal" id, label " balance", 0.0f)
 
         #define SLAP_DELAY_COMMON(pan)  \
             BYPASS, \
@@ -167,14 +168,17 @@ namespace lsp
             "SD16M",
             &developers::v_sadovnikov,
             "slap_delay_mono",
-            LSP_LV2_URI("slap_delay_mono"),
-            LSP_LV2UI_URI("slap_delay_mono"),
-            "gt0d",
-            LSP_VST3_UID("sd16m   gt0d"),
-            LSP_VST3UI_UID("sd16m   gt0d"),
-            LSP_LADSPA_SLAP_DELAY_BASE + 0,
-            LSP_LADSPA_URI("slap_delay_mono"),
-            LSP_CLAP_URI("slap_delay_mono"),
+            {
+                LSP_LV2_URI("slap_delay_mono"),
+                LSP_LV2UI_URI("slap_delay_mono"),
+                "gt0d",
+                LSP_VST3_UID("sd16m   gt0d"),
+                LSP_VST3UI_UID("sd16m   gt0d"),
+                LSP_LADSPA_SLAP_DELAY_BASE + 0,
+                LSP_LADSPA_URI("slap_delay_mono"),
+                LSP_CLAP_URI("slap_delay_mono"),
+                LSP_GST_UID("slap_delay_mono"),
+            },
             LSP_PLUGINS_SLAP_DELAY_VERSION,
             plugin_classes,
             clap_features_mono,
@@ -194,14 +198,17 @@ namespace lsp
             "SD16S",
             &developers::v_sadovnikov,
             "slap_delay_stereo",
-            LSP_LV2_URI("slap_delay_stereo"),
-            LSP_LV2UI_URI("slap_delay_stereo"),
-            "0xxj",
-            LSP_VST3_UID("sd16s   0xxj"),
-            LSP_VST3UI_UID("sd16s   0xxj"),
-            LSP_LADSPA_SLAP_DELAY_BASE + 1,
-            LSP_LADSPA_URI("slap_delay_stereo"),
-            LSP_CLAP_URI("slap_delay_stereo"),
+            {
+                LSP_LV2_URI("slap_delay_stereo"),
+                LSP_LV2UI_URI("slap_delay_stereo"),
+                "0xxj",
+                LSP_VST3_UID("sd16s   0xxj"),
+                LSP_VST3UI_UID("sd16s   0xxj"),
+                LSP_LADSPA_SLAP_DELAY_BASE + 1,
+                LSP_LADSPA_URI("slap_delay_stereo"),
+                LSP_CLAP_URI("slap_delay_stereo"),
+                LSP_GST_UID("slap_delay_stereo"),
+            },
             LSP_PLUGINS_SLAP_DELAY_VERSION,
             plugin_classes,
             clap_features_stereo,
