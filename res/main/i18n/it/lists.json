@@ -1,9 +1,9 @@
 {
 	"slap_delay": {
-		"lines_0:3": "Linee di Ritardo 0-3",
-		"lines_4:7": "Linee di Ritardo 4-7",
-		"lines_8:11": "Linee di Ritardo 8-11",
-		"lines_12:15": "Linee di Ritardo 12-15",
+		"lines_0:3": "Linee di Ritardo 1-4",
+		"lines_4:7": "Linee di Ritardo 5-8",
+		"lines_8:11": "Linee di Ritardo 9-12",
+		"lines_12:15": "Linee di Ritardo 13-16",
 		"modes": {
 			"distance": "Distanza",
 			"notes": "Note",
@@ -12,4 +12,3 @@
 		}
 	}
 }
-

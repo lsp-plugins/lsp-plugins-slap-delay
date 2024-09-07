@@ -132,7 +132,7 @@
 						</ui:with>
 
 						<ui:with bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? 0.75 : 1.0" bg.bright="!:dm${i} or :m${i} or ((${has_solo}) and !:s${i} and :dm${i}) ? :const_bg_darken : 1.0">
-							<cell rows="2"><label text="labels.specials.idx" text:id="${i}"/></cell>
+							<cell rows="2"><label text="labels.specials.idx" text:id="${:i+1}"/></cell>
 							<cell rows="2">
 								<grid rows="2" width="65" vfill="false" cols="3" pad.h="6">
 									<cell cols="3"><combo id="dm${i}" pad.b="4"/></cell>
