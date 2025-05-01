@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2025 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2025 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -96,14 +96,14 @@ namespace lsp
             INT_CONTROL("ds" #id, "Delay " #id " denominator", U_BEAT, slap_delay_metadata::DENOMINATOR), \
             SWITCH("eq" #id, "Equalizer " #id " on", 0.0f), \
             SWITCH("lfc" #id, "Delay " #id " low-cut", 0.0f), \
-            LOG_CONTROL("flc" #id, "Delay " #id " low-cut frequency", U_HZ, slap_delay_metadata::LOW_CUT), \
+            LOG_CONTROL("flc" #id, "Delay " #id " low-cut frequency", "LC freq" #id, U_HZ, slap_delay_metadata::LOW_CUT), \
             SWITCH("hfc" #id, "Delay " #id " high-cut", 0.0f), \
-            LOG_CONTROL("fhc" #id, "Delay " #id " high-cut frequency", U_HZ, slap_delay_metadata::HIGH_CUT), \
-            LOG_CONTROL("fbs" #id, "Delay " #id " sub-bass", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbb" #id, "Delay " #id " bass", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbm" #id, "Delay " #id " middle", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbp" #id, "Delay " #id " presence", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbt" #id, "Delay " #id " treble", U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fhc" #id, "Delay " #id " high-cut frequency", "HC freq" #id, U_HZ, slap_delay_metadata::HIGH_CUT), \
+            LOG_CONTROL("fbs" #id, "Delay " #id " sub-bass", "Sub lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbb" #id, "Delay " #id " bass", "Bass lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbm" #id, "Delay " #id " middle", "Mid lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbp" #id, "Delay " #id " presence", "Presence lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbt" #id, "Delay " #id " treble", "Treble lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
             AMP_GAIN1("dfb" #id, "Delay " #id " feedback", GAIN_AMP_M_INF_DB), \
             AMP_GAIN10("dg" #id, "Delay " #id " gain", GAIN_AMP_0_DB)
 
