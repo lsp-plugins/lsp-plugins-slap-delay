@@ -68,36 +68,36 @@ namespace lsp
 
         #define SLAP_DELAY_COMMON(pan)  \
             BYPASS, \
-            COMBO("lsel", "Delay line selector", 0, slap_delay_lines), \
+            COMBO("lsel", "Delay line selector", "Delay line", 0, slap_delay_lines), \
             CONTROL("temp", "Temperature", U_DEG_CEL, slap_delay_metadata::TEMPERATURE), \
             CONTROL("pred", "Pre-delay", U_MSEC, slap_delay_metadata::PRED_TIME), \
             CONTROL("strch", "Stretch time", U_PERCENT, slap_delay_metadata::STRETCH), \
             CONTROL("tempo", "Tempo", U_BPM, slap_delay_metadata::TEMPO), \
-            SWITCH("sync", "Tempo sync", 0.0f), \
-            SWITCH("ramp", "Ramping delay", 0.0f), \
+            SWITCH("sync", "Tempo sync", "Tempo sync", 0.0f), \
+            SWITCH("ramp", "Ramping delay", "Delay ramp", 0.0f), \
             pan("_in", "Input"), \
             DRY_GAIN(GAIN_AMP_0_DB), \
-            SWITCH("dm", "Dry mute", 0.0f), \
+            SWITCH("dm", "Dry mute", "Mute dry", 0.0f), \
             WET_GAIN(GAIN_AMP_0_DB), \
-            SWITCH("wm", "Wet mute", 0.0f), \
+            SWITCH("wm", "Wet mute", "Mute wet", 0.0f), \
             DRYWET(100.0f), \
-            SWITCH("mono", "Mono output", 0.0f), \
+            SWITCH("mono", "Mono output", "Mono", 0.0f), \
             OUT_GAIN
 
         #define SLAP_DELAY_PROCESSOR(id, pan) \
-            COMBO("dm" #id, "Delay " #id " mode", 0, slap_delay_modes), \
+            COMBO("dm" #id, "Delay " #id " mode", "Mode " #id, 0, slap_delay_modes), \
             pan(#id, "Delay " #id), \
-            SWITCH("s" #id, "Delay " #id " solo", 0.0f), \
-            SWITCH("m" #id, "Delay " #id " mute", 0.0f), \
-            SWITCH("ph" #id, "Delay " #id " phase", 0.0f), \
+            SWITCH("s" #id, "Delay " #id " solo", "Solo " #id, 0.0f), \
+            SWITCH("m" #id, "Delay " #id " mute", "Mute " #id, 0.0f), \
+            SWITCH("ph" #id, "Delay " #id " phase", "Phase " #id, 0.0f), \
             CONTROL("dt" #id, "Delay " #id " time", U_MSEC, slap_delay_metadata::TIME), \
             CONTROL("dd" #id, "Delay " #id " distance", U_M, slap_delay_metadata::DISTANCE), \
             CONTROL("df" #id, "Delay " #id " fraction", U_BAR, slap_delay_metadata::FRACTION), \
             INT_CONTROL("ds" #id, "Delay " #id " denominator", U_BEAT, slap_delay_metadata::DENOMINATOR), \
-            SWITCH("eq" #id, "Equalizer " #id " on", 0.0f), \
-            SWITCH("lfc" #id, "Delay " #id " low-cut", 0.0f), \
+            SWITCH("eq" #id, "Equalizer " #id " on", "Eq " #id, 0.0f), \
+            SWITCH("lfc" #id, "Delay " #id " low-cut", "LC On" #id, 0.0f), \
             LOG_CONTROL("flc" #id, "Delay " #id " low-cut frequency", "LC freq" #id, U_HZ, slap_delay_metadata::LOW_CUT), \
-            SWITCH("hfc" #id, "Delay " #id " high-cut", 0.0f), \
+            SWITCH("hfc" #id, "Delay " #id " high-cut", "HC On" #id, 0.0f), \
             LOG_CONTROL("fhc" #id, "Delay " #id " high-cut frequency", "HC freq" #id, U_HZ, slap_delay_metadata::HIGH_CUT), \
             LOG_CONTROL("fbs" #id, "Delay " #id " sub-bass", "Sub lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
             LOG_CONTROL("fbb" #id, "Delay " #id " bass", "Bass lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
