@@ -69,10 +69,10 @@ namespace lsp
         #define SLAP_DELAY_COMMON(pan)  \
             BYPASS, \
             COMBO("lsel", "Delay line selector", "Delay line", 0, slap_delay_lines), \
-            CONTROL("temp", "Temperature", U_DEG_CEL, slap_delay_metadata::TEMPERATURE), \
-            CONTROL("pred", "Pre-delay", U_MSEC, slap_delay_metadata::PRED_TIME), \
-            CONTROL("strch", "Stretch time", U_PERCENT, slap_delay_metadata::STRETCH), \
-            CONTROL("tempo", "Tempo", U_BPM, slap_delay_metadata::TEMPO), \
+            CONTROL("temp", "Temperature", "Temperature", U_DEG_CEL, slap_delay_metadata::TEMPERATURE), \
+            CONTROL("pred", "Pre-delay", "Pre-delay", U_MSEC, slap_delay_metadata::PRED_TIME), \
+            CONTROL("strch", "Stretch time", "Stretch", U_PERCENT, slap_delay_metadata::STRETCH), \
+            CONTROL("tempo", "Tempo", "Tempo", U_BPM, slap_delay_metadata::TEMPO), \
             SWITCH("sync", "Tempo sync", "Tempo sync", 0.0f), \
             SWITCH("ramp", "Ramping delay", "Delay ramp", 0.0f), \
             pan("_in", "Input"), \
@@ -90,20 +90,20 @@ namespace lsp
             SWITCH("s" #id, "Delay " #id " solo", "Solo " #id, 0.0f), \
             SWITCH("m" #id, "Delay " #id " mute", "Mute " #id, 0.0f), \
             SWITCH("ph" #id, "Delay " #id " phase", "Phase " #id, 0.0f), \
-            CONTROL("dt" #id, "Delay " #id " time", U_MSEC, slap_delay_metadata::TIME), \
-            CONTROL("dd" #id, "Delay " #id " distance", U_M, slap_delay_metadata::DISTANCE), \
-            CONTROL("df" #id, "Delay " #id " fraction", U_BAR, slap_delay_metadata::FRACTION), \
-            INT_CONTROL("ds" #id, "Delay " #id " denominator", "Denom" #id, U_BEAT, slap_delay_metadata::DENOMINATOR), \
+            CONTROL("dt" #id, "Delay " #id " time", "Delay " #id, U_MSEC, slap_delay_metadata::TIME), \
+            CONTROL("dd" #id, "Delay " #id " distance", "Distance " #id, U_M, slap_delay_metadata::DISTANCE), \
+            CONTROL("df" #id, "Delay " #id " fraction", "Frac " #id, U_BAR, slap_delay_metadata::FRACTION), \
+            INT_CONTROL("ds" #id, "Delay " #id " denominator", "Denom " #id, U_BEAT, slap_delay_metadata::DENOMINATOR), \
             SWITCH("eq" #id, "Equalizer " #id " on", "Eq " #id, 0.0f), \
-            SWITCH("lfc" #id, "Delay " #id " low-cut", "LC On" #id, 0.0f), \
-            LOG_CONTROL("flc" #id, "Delay " #id " low-cut frequency", "LC freq" #id, U_HZ, slap_delay_metadata::LOW_CUT), \
-            SWITCH("hfc" #id, "Delay " #id " high-cut", "HC On" #id, 0.0f), \
-            LOG_CONTROL("fhc" #id, "Delay " #id " high-cut frequency", "HC freq" #id, U_HZ, slap_delay_metadata::HIGH_CUT), \
-            LOG_CONTROL("fbs" #id, "Delay " #id " sub-bass", "Sub lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbb" #id, "Delay " #id " bass", "Bass lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbm" #id, "Delay " #id " middle", "Mid lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbp" #id, "Delay " #id " presence", "Presence lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbt" #id, "Delay " #id " treble", "Treble lvl" #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            SWITCH("lfc" #id, "Delay " #id " low-cut", "LC On " #id, 0.0f), \
+            LOG_CONTROL("flc" #id, "Delay " #id " low-cut frequency", "LC freq " #id, U_HZ, slap_delay_metadata::LOW_CUT), \
+            SWITCH("hfc" #id, "Delay " #id " high-cut", "HC On " #id, 0.0f), \
+            LOG_CONTROL("fhc" #id, "Delay " #id " high-cut frequency", "HC freq " #id, U_HZ, slap_delay_metadata::HIGH_CUT), \
+            LOG_CONTROL("fbs" #id, "Delay " #id " sub-bass", "Sub lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbb" #id, "Delay " #id " bass", "Bass lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbm" #id, "Delay " #id " middle", "Mid lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbp" #id, "Delay " #id " presence", "Presence lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbt" #id, "Delay " #id " treble", "Treble lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
             AMP_GAIN1("dfb" #id, "Delay " #id " feedback", GAIN_AMP_M_INF_DB), \
             AMP_GAIN10("dg" #id, "Delay " #id " gain", GAIN_AMP_0_DB)
 
