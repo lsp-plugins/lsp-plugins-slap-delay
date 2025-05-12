@@ -93,7 +93,7 @@ namespace lsp
             CONTROL("dt" #id, "Delay " #id " time", U_MSEC, slap_delay_metadata::TIME), \
             CONTROL("dd" #id, "Delay " #id " distance", U_M, slap_delay_metadata::DISTANCE), \
             CONTROL("df" #id, "Delay " #id " fraction", U_BAR, slap_delay_metadata::FRACTION), \
-            INT_CONTROL("ds" #id, "Delay " #id " denominator", U_BEAT, slap_delay_metadata::DENOMINATOR), \
+            INT_CONTROL("ds" #id, "Delay " #id " denominator", "Denom" #id, U_BEAT, slap_delay_metadata::DENOMINATOR), \
             SWITCH("eq" #id, "Equalizer " #id " on", "Eq " #id, 0.0f), \
             SWITCH("lfc" #id, "Delay " #id " low-cut", "LC On" #id, 0.0f), \
             LOG_CONTROL("flc" #id, "Delay " #id " low-cut frequency", "LC freq" #id, U_HZ, slap_delay_metadata::LOW_CUT), \
