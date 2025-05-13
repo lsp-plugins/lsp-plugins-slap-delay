@@ -58,13 +58,13 @@ namespace lsp
             { NULL, NULL }
         };
 
-        #define SLAP_PAN_MONO(id, label) \
-            PAN_CTL("p" id, label " panorama", 0.0f)
+        #define SLAP_PAN_MONO(id, label, alias) \
+            PAN_CTL("p" id, label " panorama", "Pan" alias, 0.0f)
 
-        #define SLAP_PAN_STEREO(id, label) \
-            PAN_CTL("pl" id, label " left channel panorama", -100.0f), \
-            PAN_CTL("pr" id, label " right channel panorama", 100.0f), \
-            PAN_CTL("bal" id, label " balance", 0.0f)
+        #define SLAP_PAN_STEREO(id, label, alias) \
+            PAN_CTL("pl" id, label " left channel panorama", "Pan L" alias, -100.0f), \
+            PAN_CTL("pr" id, label " right channel panorama", "Pan R" alias, 100.0f), \
+            PAN_CTL("bal" id, label " balance", "Balance" alias, 0.0f)
 
         #define SLAP_DELAY_COMMON(pan)  \
             BYPASS, \
@@ -75,7 +75,7 @@ namespace lsp
             CONTROL("tempo", "Tempo", "Tempo", U_BPM, slap_delay_metadata::TEMPO), \
             SWITCH("sync", "Tempo sync", "Tempo sync", 0.0f), \
             SWITCH("ramp", "Ramping delay", "Delay ramp", 0.0f), \
-            pan("_in", "Input"), \
+            pan("_in", "Input", " In"), \
             DRY_GAIN(GAIN_AMP_0_DB), \
             SWITCH("dm", "Dry mute", "Mute dry", 0.0f), \
             WET_GAIN(GAIN_AMP_0_DB), \
@@ -86,7 +86,7 @@ namespace lsp
 
         #define SLAP_DELAY_PROCESSOR(id, pan) \
             COMBO("dm" #id, "Delay " #id " mode", "Mode " #id, 0, slap_delay_modes), \
-            pan(#id, "Delay " #id), \
+            pan(#id, "Delay " #id, " " #id), \
             SWITCH("s" #id, "Delay " #id " solo", "Solo " #id, 0.0f), \
             SWITCH("m" #id, "Delay " #id " mute", "Mute " #id, 0.0f), \
             SWITCH("ph" #id, "Delay " #id " phase", "Phase " #id, 0.0f), \
@@ -104,8 +104,8 @@ namespace lsp
             LOG_CONTROL("fbm" #id, "Delay " #id " middle", "Mid lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
             LOG_CONTROL("fbp" #id, "Delay " #id " presence", "Presence lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
             LOG_CONTROL("fbt" #id, "Delay " #id " treble", "Treble lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            AMP_GAIN1("dfb" #id, "Delay " #id " feedback", GAIN_AMP_M_INF_DB), \
-            AMP_GAIN10("dg" #id, "Delay " #id " gain", GAIN_AMP_0_DB)
+            AMP_GAIN1("dfb" #id, "Delay " #id " feedback", "Feed " #id, GAIN_AMP_M_INF_DB), \
+            AMP_GAIN10("dg" #id, "Delay " #id " gain", "Gain " #id, GAIN_AMP_0_DB)
 
         #define SLAP_DELAY_PROCESSORS(pan) \
             SLAP_DELAY_PROCESSOR(0, pan), \
