@@ -188,7 +188,8 @@ namespace lsp
             "plugins/delay/slap_delay/mono.xml",
             NULL,
             mono_to_stereo_plugin_port_groups,
-            &slap_delay_bundle
+            &slap_delay_bundle,
+            2
         };
         LSP_REGISTER_METADATA(slap_delay_mono);
 
@@ -219,7 +220,8 @@ namespace lsp
             "plugins/delay/slap_delay/stereo.xml",
             NULL,
             stereo_plugin_port_groups,
-            &slap_delay_bundle
+            &slap_delay_bundle,
+            1
         };
         LSP_REGISTER_METADATA(slap_delay_stereo);
 
