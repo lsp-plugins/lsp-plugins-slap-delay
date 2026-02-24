@@ -43,7 +43,6 @@ namespace lsp
                 {
                     dspu::RawRingBuffer     sBuffer;    // Ring buffer for the delay data
                     dspu::Equalizer         sEqualizer; // Delay equalizer
-                    bool                    bClear;     // Clear flag
 
                     float                   fGain[2];   // Amount of gain for left and right input channels
                     float                   fFeedback;  // Feedback gain
@@ -55,6 +54,8 @@ namespace lsp
 
                     size_t                  nDelay;     // Delay
                     size_t                  nNewDelay;  // New delay
+                    uint32_t                nChangeReq; // Change request
+                    uint32_t                nChangeResp;// Change response
                     uint32_t                nMode;      // Current operating mode
 
                     plug::IPort            *pMode;      // Operating mode port
@@ -94,13 +95,41 @@ namespace lsp
                     plug::IPort            *pPan;       // Panning
                 } input_t;
 
+                typedef struct proc_state_t
+                {
+                    mono_processor_t       *vProcessors;// Processors
+                    size_t                  nLength;    // Length
+                    size_t                  nSampleRate;// Sample rate
+                    uint32_t                nChangeId;  // Serial state
+                } proc_state_t;
+
+                class ProcessorAllocator: public ipc::ITask
+                {
+                    private:
+                        slap_delay         *pCore;
+                        proc_state_t        sState;
+
+                    public:
+                        explicit ProcessorAllocator(slap_delay *core);
+                        virtual ~ProcessorAllocator() override;
+
+                    public:
+                        virtual status_t    run() override;
+
+                    public:
+                        inline proc_state_t &state() { return sState; }
+                };
+
             protected:
                 size_t              nInputs;        // Mono/Stereo mode flag
                 input_t            *vInputs;        // Inputs
 
-                processor_t         vProcessors[meta::slap_delay_metadata::MAX_PROCESSORS];    // Processors
+                processor_t         vProcessors[meta::slap_delay_metadata::MAX_PROCESSORS];     // Processors
+                ProcessorAllocator *vAllocators[meta::slap_delay_metadata::MAX_PROCESSORS];     // Allocation tasks
                 channel_t           vChannels[2];
 
+                ipc::IExecutor     *pExecutor;
+                size_t              nDelayLength;   // Maximum delay length
                 bool                bMono;          // Mono output flag
 
                 plug::IPort        *pBypass;        // Bypass
@@ -123,6 +152,11 @@ namespace lsp
 
             protected:
                 void                do_destroy();
+                void                sync_processors_state();
+                void                update_processor_state(processor_t *p);
+                status_t            manage_request(proc_state_t & req);
+
+            protected:
                 static void         process_const_delay(
                     float *dst, const float *src,
                     mono_processor_t *mp,
@@ -133,6 +167,8 @@ namespace lsp
                     mono_processor_t *mp,
                     size_t delay, float delta,
                     size_t step, size_t samples);
+
+                static void         delete_processors(mono_processor_t *vp, size_t count);
 
             public:
                 slap_delay(const meta::plugin_t *metadata);

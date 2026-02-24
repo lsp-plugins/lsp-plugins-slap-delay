@@ -60,6 +60,26 @@ namespace lsp
         };
 
         //-------------------------------------------------------------------------
+        slap_delay::ProcessorAllocator::ProcessorAllocator(slap_delay *core)
+        {
+            pCore               = core;
+            sState.vProcessors  = NULL;
+            sState.nLength      = 0;
+            sState.nSampleRate  = 0;
+            sState.nChangeId    = 0;
+        }
+
+        slap_delay::ProcessorAllocator::~ProcessorAllocator()
+        {
+            pCore               = NULL;
+        }
+
+        status_t slap_delay::ProcessorAllocator::run()
+        {
+            return pCore->manage_request(sState);
+        }
+
+        //-------------------------------------------------------------------------
         slap_delay::slap_delay(const meta::plugin_t *metadata): plug::Module(metadata)
         {
             nInputs         = 0;
@@ -69,25 +89,15 @@ namespace lsp
 
             vInputs         = NULL;
 
+            pExecutor       = NULL;
+            nDelayLength    = 0;
             bMono           = false;
 
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
             {
                 processor_t *p      = &vProcessors[i];
 
-                p->vDelay           = new mono_processor_t[nInputs];
-                if (p->vDelay == NULL)
-                    return;
-
-                for (size_t j=0; j<nInputs; ++j)
-                {
-                    mono_processor_t *mp = &p->vDelay[j];
-
-                    mp->fGain[0]        = 0.0f;
-                    mp->fGain[1]        = 0.0f;
-                    mp->fFeedback       = 0.0f;
-                }
-
+                p->vDelay           = NULL;
                 p->nDelay           = 0;
                 p->nNewDelay        = 0;
                 p->nMode            = 0;
@@ -113,6 +123,9 @@ namespace lsp
                 for (size_t j=0; j<meta::slap_delay_metadata::EQ_BANDS; ++j)
                     p->pFreqGain[j]     = NULL;
             }
+
+            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
+                vAllocators[i]      = NULL;
 
             for (size_t i=0; i<2; ++i)
             {
@@ -159,6 +172,8 @@ namespace lsp
             if (vInputs == NULL)
                 return;
 
+            pExecutor       = wrapper->executor();
+
             // Allocate buffers
             size_t alloc    = BUFFER_SIZE * 4;
             float *ptr      = alloc_aligned<float>(vData, alloc * sizeof(float), DEFAULT_ALIGN);
@@ -190,6 +205,8 @@ namespace lsp
 
                 p->nDelay           = 0;
                 p->nNewDelay        = 0;
+                p->nChangeReq       = 0;
+                p->nChangeResp      = 0;
                 p->nMode            = meta::slap_delay_metadata::OP_MODE_NONE;
 
                 p->pMode            = NULL;
@@ -209,16 +226,13 @@ namespace lsp
 
                 for (size_t j=0; j<meta::slap_delay_metadata::EQ_BANDS; ++j)
                     p->pFreqGain[j]     = NULL;
+            }
 
-                for (size_t j=0; j<nInputs; ++j)
-                {
-                    mono_processor_t *mp = &p->vDelay[j];
-
-                    mp->sEqualizer.init(meta::slap_delay_metadata::EQ_BANDS + 2, 0);
-                    mp->sEqualizer.set_mode(dspu::EQM_IIR);
-
-                    mp->bClear          = true;
-                }
+            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
+            {
+                vAllocators[i]      = new ProcessorAllocator(this);
+                if (vAllocators[i] == NULL)
+                    return;
             }
 
             lsp_assert(ptr <= reinterpret_cast<float *>(&vData[alloc * sizeof(float) + DEFAULT_ALIGN]));
@@ -295,6 +309,21 @@ namespace lsp
             do_destroy();
         }
 
+        void slap_delay::delete_processors(mono_processor_t *vp, size_t count)
+        {
+            if (vp == NULL)
+                return;
+
+            for (size_t i=0; i<count; ++i)
+            {
+                mono_processor_t *mp = &vp[i];
+
+                mp->sBuffer.destroy();
+                mp->sEqualizer.destroy();
+            }
+            delete [] vp;
+        }
+
         void slap_delay::do_destroy()
         {
             if (vInputs != NULL)
@@ -303,21 +332,21 @@ namespace lsp
                 vInputs = NULL;
             }
 
+            // Delete processors
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
             {
                 processor_t *p      = &vProcessors[i];
-                if (p->vDelay == NULL)
-                    continue;
+                delete_processors(release_ptr(p->vDelay), nInputs);
+            }
 
-                for (size_t j=0; j<nInputs; ++j)
+            // Delete allocators
+            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
+            {
+                if (vAllocators[i] != NULL)
                 {
-                    mono_processor_t *mp = &p->vDelay[j];
-
-                    mp->sBuffer.destroy();
-                    mp->sEqualizer.destroy();
+                    delete vAllocators[i];
+                    vAllocators[i]      = NULL;
                 }
-                delete [] p->vDelay;
-                p->vDelay   = NULL;
             }
 
             free_aligned(vData);
@@ -330,31 +359,16 @@ namespace lsp
 
         void slap_delay::update_settings()
         {
-            float out_gain      = pOutGain->value();
-            float g_dry         = (pDryMute->value() >= 0.5f) ? 0.0f : pDry->value();
-            float g_wet         = (pWetMute->value() >= 0.5f) ? 0.0f : pWet->value();
-            float drywet        = pDryWet->value() * 0.01f;
-            float dry_gain      = (g_dry * drywet + 1.0f - drywet) * out_gain;
-            float wet_gain      = g_wet * drywet * out_gain;
+            const float out_gain    = pOutGain->value();
+            const float g_dry       = (pDryMute->value() >= 0.5f) ? 0.0f : pDry->value();
+            const float drywet      = pDryWet->value() * 0.01f;
+            const float dry_gain    = (g_dry * drywet + 1.0f - drywet) * out_gain;
 
-            float d_delay       = 1.0f / dspu::sound_speed(pTemp->value()); // 1 / ss [m/s] = d_delay [s/m]
-            float p_delay       = pPred->value(); // Pre-delay value
-            float stretch       = pStretch->value() * 0.01;
-            bool bypass         = pBypass->value() >= 0.5f;
-            bool has_solo       = false;
-            bMono               = pMono->value() >= 0.5f;
-            bool ramping        = pRamping->value() >= 0.5f;
+            const bool bypass       = pBypass->value() >= 0.5f;
+            bMono                   = pMono->value() >= 0.5f;
 
             for (size_t i=0; i<2; ++i)
                 vChannels[i].sBypass.set_bypass(bypass);
-
-            // Check that solo is enabled
-            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
-                if (vProcessors[i].pSolo->value() >= 0.5f)
-                {
-                    has_solo        = true;
-                    break;
-                }
 
             if (nInputs == 1)
             {
@@ -382,151 +396,18 @@ namespace lsp
 
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
             {
-                processor_t *p      = &vProcessors[i];
+                processor_t * const p   = &vProcessors[i];
+                const size_t old_mode   = p->nMode;
+                p->nMode                = p->pMode->value();
 
-                // Determine mode
-                bool eq_on          = p->pEq->value() >= 0.5f;
-                bool low_on         = p->pLowCut->value() >= 0.5f;
-                bool high_on        = p->pHighCut->value() >= 0.5f;
-                dspu::equalizer_mode_t eq_mode = (eq_on || low_on || high_on) ? dspu::EQM_IIR : dspu::EQM_BYPASS;
-
-                size_t old_mode     = p->nMode;
-                p->nMode            = p->pMode->value();
-
-                if (p->nMode == meta::slap_delay_metadata::OP_MODE_TIME)
-                    p->nNewDelay        = dspu::millis_to_samples(fSampleRate, p->pTime->value() * stretch + p_delay);
-                else if (p->nMode == meta::slap_delay_metadata::OP_MODE_DISTANCE)
-                    p->nNewDelay        = dspu::seconds_to_samples(fSampleRate, p->pDistance->value() * d_delay * stretch + p_delay * 0.001f);
-                else if (p->nMode == meta::slap_delay_metadata::OP_MODE_NOTE)
+                if ((old_mode != p->nMode) &&
+                    ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) ||
+                    (p->nMode == meta::slap_delay_metadata::OP_MODE_NONE)))
                 {
-                    float tempo         = (pSync->value() >= 0.5f) ? pWrapper->position()->beatsPerMinute : pTempo->value();
-                    if (tempo < meta::slap_delay_metadata::TEMPO_MIN)
-                        tempo               = meta::slap_delay_metadata::TEMPO_MIN;
-                    else if (tempo > meta::slap_delay_metadata::TEMPO_MAX)
-                        tempo               = meta::slap_delay_metadata::TEMPO_MAX;
-
-                    float delay         = (240.0f * p->pFrac->value()) / tempo;
-                    p->nNewDelay        = dspu::seconds_to_samples(fSampleRate, delay * stretch + p_delay * 0.001f);
+                    ++p->nChangeReq;
                 }
                 else
-                    p->nNewDelay        = 0;
-
-                if (!ramping)
-                    p->nDelay           = p->nNewDelay;
-
-                lsp_trace("p[%d].nDelay     = %d", int(i), int(p->nDelay));
-                lsp_trace("p[%d].nNewDelay  = %d", int(i), int(p->nNewDelay));
-
-                // Calculate delay gain
-                float delay_gain    = (p->pMute->value() >= 0.5f) ? 0.0f : p->pGain->value() * wet_gain;
-                if ((has_solo) && (p->pSolo->value() < 0.5f))
-                    delay_gain          = 0.0f;
-                if (p->pPhase->value() >= 0.5f)
-                    delay_gain          = -delay_gain;
-
-                const float feedback    = p->pFeedback->value();
-
-                // Apply panning parameters
-                if (nInputs == 1)
-                {
-                    const float gain        = 0.005f * delay_gain;
-                    const float pan         = p->pPan[0]->value();
-                    p->vDelay[0].fGain[0]   = (100.0f - pan) * gain;
-                    p->vDelay[0].fGain[1]   = (100.0f + pan) * gain;
-                    p->vDelay[0].fFeedback  = feedback;
-                    if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
-                    {
-                        p->vDelay[0].bClear     = true;
-                        p->vDelay[0].sBuffer.reset();
-                    }
-                }
-                else
-                {
-                    const float gain        = 0.005f * delay_gain;
-                    const float balance     = (p->pBalance != NULL) ? p->pBalance->value() : 0.0f;
-                    const float bal_l       = gain * lsp_min((100.0f - balance) * 0.01f, 1.0f);
-                    const float bal_r       = gain * lsp_min((100.0f + balance) * 0.01f, 1.0f);
-                    const float pan_l       = p->pPan[0]->value();
-                    const float pan_r       = p->pPan[1]->value();
-
-                    p->vDelay[0].fGain[0]   = (100.0f - pan_l) * bal_l;
-                    p->vDelay[0].fGain[1]   = (100.0f - pan_r) * bal_l;
-                    p->vDelay[0].fFeedback  = feedback;
-                    p->vDelay[1].fGain[0]   = (100.0f + pan_l) * bal_r;
-                    p->vDelay[1].fGain[1]   = (100.0f + pan_r) * bal_r;
-                    p->vDelay[1].fFeedback  = feedback;
-
-                    if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
-                    {
-                        p->vDelay[0].bClear     = true;
-                        p->vDelay[1].bClear     = true;
-
-                        p->vDelay[0].sBuffer.reset();
-                        p->vDelay[1].sBuffer.reset();
-                    }
-                }
-
-                // Update equalizer settings
-                for (size_t j=0; j<nInputs; ++j)
-                {
-                    // Update equalizer
-                    dspu::Equalizer *eq     = &p->vDelay[j].sEqualizer;
-                    eq->set_mode(eq_mode);
-
-                    if (eq_mode == dspu::EQM_BYPASS)
-                        continue;
-
-                    dspu::filter_params_t fp;
-                    size_t band     = 0;
-
-                    // Set-up parametric equalizer
-                    while (band < meta::slap_delay_metadata::EQ_BANDS)
-                    {
-                        if (band == 0)
-                        {
-                            fp.fFreq        = band_freqs[band];
-                            fp.fFreq2       = fp.fFreq;
-                            fp.nType        = (eq_on) ? dspu::FLT_MT_LRX_LOSHELF : dspu::FLT_NONE;
-                        }
-                        else if (band == (meta::slap_delay_metadata::EQ_BANDS - 1))
-                        {
-                            fp.fFreq        = band_freqs[band-1];
-                            fp.fFreq2       = fp.fFreq;
-                            fp.nType        = (eq_on) ? dspu::FLT_MT_LRX_HISHELF : dspu::FLT_NONE;
-                        }
-                        else
-                        {
-                            fp.fFreq        = band_freqs[band-1];
-                            fp.fFreq2       = band_freqs[band];
-                            fp.nType        = (eq_on) ? dspu::FLT_MT_LRX_LADDERPASS : dspu::FLT_NONE;
-                        }
-
-                        fp.fGain        = p->pFreqGain[band]->value();
-                        fp.nSlope       = 2;
-                        fp.fQuality     = 0.0f;
-
-                        // Update filter parameters
-                        eq->set_params(band++, &fp);
-                    }
-
-                    // Setup hi-pass filter
-                    fp.nType        = (low_on) ? dspu::FLT_BT_BWC_HIPASS : dspu::FLT_NONE;
-                    fp.fFreq        = p->pLowFreq->value();
-                    fp.fFreq2       = fp.fFreq;
-                    fp.fGain        = 1.0f;
-                    fp.nSlope       = 4;
-                    fp.fQuality     = 0.0f;
-                    eq->set_params(band++, &fp);
-
-                    // Setup low-pass filter
-                    fp.nType        = (high_on) ? dspu::FLT_BT_BWC_LOPASS : dspu::FLT_NONE;
-                    fp.fFreq        = p->pHighFreq->value();
-                    fp.fFreq2       = fp.fFreq;
-                    fp.fGain        = 1.0f;
-                    fp.nSlope       = 4;
-                    fp.fQuality     = 0.0f;
-                    eq->set_params(band++, &fp);
-                }
+                    update_processor_state(p);
             }
         }
 
@@ -547,14 +428,20 @@ namespace lsp
 //            lsp_trace("time_delay=%d, dist_delay=%d, tempo_delay=%d, max_delay=%d, buf_size=%d",
 //                int(time_delay), int(dist_delay), int(tempo_delay), int(max_delay), int(buf_size));
 
-            // Initialize devices responsible for delay implementation
-            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
-                for (size_t j=0; j<nInputs; ++j)
+            // Buffer size changed?
+            if (nDelayLength != buf_size)
+            {
+                // Update delay length
+                nDelayLength        = buf_size;
+
+                // Initialize devices responsible for delay implementation
+                for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
                 {
-                    mono_processor_t *mp    = &vProcessors[i].vDelay[j];
-                    mp->sBuffer.init(buf_size);
-                    mp->sEqualizer.set_sample_rate(sr);
+                    processor_t * const p           = &vProcessors[i];
+                    if (p->nMode != meta::slap_delay_metadata::OP_MODE_NONE)
+                        ++p->nChangeReq;
                 }
+            }
 
             // Initialize output channels
             for (size_t i=0; i<2; ++i)
@@ -568,7 +455,6 @@ namespace lsp
         {
             const float feed    = (delay > 0) ? mp->fFeedback : 0.0f;
             float *head         = mp->sBuffer.head();
-            bool clear          = mp->bClear;
 
             // For very short delays there is no profit from dsp functions
             if (delay < DELAY_PACKET_PROCESSING)
@@ -579,30 +465,18 @@ namespace lsp
 
                 for (size_t offset=0; offset < samples; ++offset)
                 {
-                    if ((clear) && (tail >= head))
-                    {
-                        *head               = src[offset];
-                        dst[offset]         = 0.0f;
-                    }
-                    else
-                    {
-                        *head               = src[offset] + (*tail) * feed;
-                        dst[offset]         = *tail;
-                    }
+                    *head               = src[offset] + (*tail) * feed;
+                    dst[offset]         = *tail;
 
                     ++head;
                     ++tail;
                     if (head >= end)
-                    {
                         head                = begin;
-                        clear               = false;
-                    }
                     if (tail >= end)
                         tail                = begin;
                 }
 
                 mp->sBuffer.advance(samples);
-                mp->bClear          = clear;
 
                 return;
             }
@@ -613,25 +487,12 @@ namespace lsp
                 const size_t to_do  = lsp_min(samples - offset, mp->sBuffer.remaining(delay), delay);
                 float *tail         = mp->sBuffer.tail(delay);
 
-                if ((clear) && (tail >= head))
-                {
-                    dsp::copy(head, &src[offset], to_do);
-                    dsp::fill_zero(&dst[offset], to_do);
-                }
-                else
-                {
-                    dsp::fmadd_k4(head, &src[offset], tail, feed, to_do);
-                    dsp::copy(&dst[offset], tail, to_do);
-                }
+                dsp::fmadd_k4(head, &src[offset], tail, feed, to_do);
+                dsp::copy(&dst[offset], tail, to_do);
 
-                float *new_head     = mp->sBuffer.advance(to_do);
-                if (new_head < head)
-                    clear               = false;
-                head                = new_head;
+                head                = mp->sBuffer.advance(to_do);
                 offset             += to_do;
             }
-
-            mp->bClear          = clear;
         }
 
         void slap_delay::process_varying_delay(
@@ -641,7 +502,6 @@ namespace lsp
             size_t step, size_t samples)
         {
             float *head         = mp->sBuffer.head();
-            bool clear          = mp->bClear;
 
             for (size_t offset=0; offset < samples; ++offset)
             {
@@ -649,29 +509,257 @@ namespace lsp
                 const float feed    = (vdelay > 0) ? mp->fFeedback : 0.0f;
                 float *tail         = mp->sBuffer.tail(vdelay);
 
-                if ((clear) && (tail >= head))
-                {
-                    *head               = src[offset];
-                    dst[offset]         = 0.0f;
-                }
-                else
-                {
-                    *head               = src[offset] + (*tail) * feed;
-                    dst[offset]         = *tail;
-                }
+                *head               = src[offset] + (*tail) * feed;
+                dst[offset]         = *tail;
 
                 // Update head
-                float *new_head     = mp->sBuffer.advance(1);
-                if (new_head < head)
-                    clear               = false;
-                head                = new_head;
+                head                = mp->sBuffer.advance(1);
+            }
+        }
+
+        status_t slap_delay::manage_request(proc_state_t & req)
+        {
+            // Get processors. Destroy processors on error
+            mono_processor_t *vp = release_ptr(req.vProcessors);
+            lsp_finally { delete_processors(vp, nInputs); };
+
+            // Need to re-allocate processors?
+            if (req.nLength > 0)
+            {
+                // Need to allocate new processors?
+                if (vp == NULL)
+                {
+                    vp      = new mono_processor_t[nInputs];
+                    if (vp == NULL)
+                        return STATUS_NO_MEM;
+
+                    for (size_t i=0; i<nInputs; ++i)
+                    {
+                        mono_processor_t * const mp = &vp[i];
+
+                        mp->fGain[0]        = 0.0f;
+                        mp->fGain[1]        = 0.0f;
+                        mp->fFeedback       = 0.0f;
+                    }
+                }
+
+                // Configure processors
+                for (size_t i=0; i<nInputs; ++i)
+                {
+                    mono_processor_t * const mp = &vp[i];
+                    if (!mp->sBuffer.init(req.nLength))
+                        return STATUS_NO_MEM;
+
+                    if (!mp->sEqualizer.init(meta::slap_delay_metadata::EQ_BANDS + 2, 0))
+                        return STATUS_NO_MEM;
+
+                    mp->sEqualizer.set_sample_rate(req.nSampleRate);
+                    mp->sEqualizer.set_mode(dspu::EQM_IIR);
+                }
+
+                // Remember the result
+                req.vProcessors     = release_ptr(vp);
             }
 
-            mp->bClear          = clear;
+            return STATUS_OK;
+        }
+
+
+        void slap_delay::update_processor_state(processor_t *p)
+        {
+            const float out_gain    = pOutGain->value();
+            const float g_wet       = (pWetMute->value() >= 0.5f) ? 0.0f : pWet->value();
+            const float drywet      = pDryWet->value() * 0.01f;
+            const float wet_gain    = g_wet * drywet * out_gain;
+
+            const float stretch     = pStretch->value() * 0.01f;    // Stretch factor
+            const float p_delay     = pPred->value();               // Pre-delay value
+            const float d_delay     = 1.0f / dspu::sound_speed(pTemp->value()); // 1 / ss [m/s] = d_delay [s/m]
+            const bool ramping      = pRamping->value() >= 0.5f;
+
+            // Check for solo option
+            bool has_solo           = false;
+            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
+            {
+                if (vProcessors[i].pSolo->value() >= 0.5f)
+                {
+                    has_solo        = true;
+                    break;
+                }
+            }
+
+            // Determine mode
+            if (p->nMode == meta::slap_delay_metadata::OP_MODE_TIME)
+                p->nNewDelay        = dspu::millis_to_samples(fSampleRate, p->pTime->value() * stretch + p_delay);
+            else if (p->nMode == meta::slap_delay_metadata::OP_MODE_DISTANCE)
+                p->nNewDelay        = dspu::seconds_to_samples(fSampleRate, p->pDistance->value() * d_delay * stretch + p_delay * 0.001f);
+            else if (p->nMode == meta::slap_delay_metadata::OP_MODE_NOTE)
+            {
+                float tempo         = (pSync->value() >= 0.5f) ? pWrapper->position()->beatsPerMinute : pTempo->value();
+                if (tempo < meta::slap_delay_metadata::TEMPO_MIN)
+                    tempo               = meta::slap_delay_metadata::TEMPO_MIN;
+                else if (tempo > meta::slap_delay_metadata::TEMPO_MAX)
+                    tempo               = meta::slap_delay_metadata::TEMPO_MAX;
+
+                float delay         = (240.0f * p->pFrac->value()) / tempo;
+                p->nNewDelay        = dspu::seconds_to_samples(fSampleRate, delay * stretch + p_delay * 0.001f);
+            }
+            else
+                p->nNewDelay        = 0;
+
+            if (!ramping)
+                p->nDelay           = p->nNewDelay;
+
+            lsp_trace("p[%d].nDelay     = %d", int(p - vProcessors), int(p->nDelay));
+            lsp_trace("p[%d].nNewDelay  = %d", int(p - vProcessors), int(p->nNewDelay));
+
+            // Do not configure buffer and equalizer of there is no delay
+            if ((p->nChangeReq != p->nChangeResp) || (p->vDelay == NULL))
+                return;
+
+            // Calculate delay gain
+            float delay_gain    = (p->pMute->value() >= 0.5f) ? 0.0f : p->pGain->value() * wet_gain;
+            if ((has_solo) && (p->pSolo->value() < 0.5f))
+                delay_gain          = 0.0f;
+            if (p->pPhase->value() >= 0.5f)
+                delay_gain          = -delay_gain;
+
+            const float feedback    = p->pFeedback->value();
+
+            // Apply panning parameters
+            if (nInputs == 1)
+            {
+                const float gain        = 0.005f * delay_gain;
+                const float pan         = p->pPan[0]->value();
+                p->vDelay[0].fGain[0]   = (100.0f - pan) * gain;
+                p->vDelay[0].fGain[1]   = (100.0f + pan) * gain;
+                p->vDelay[0].fFeedback  = feedback;
+            }
+            else
+            {
+                const float gain        = 0.005f * delay_gain;
+                const float balance     = (p->pBalance != NULL) ? p->pBalance->value() : 0.0f;
+                const float bal_l       = gain * lsp_min((100.0f - balance) * 0.01f, 1.0f);
+                const float bal_r       = gain * lsp_min((100.0f + balance) * 0.01f, 1.0f);
+                const float pan_l       = p->pPan[0]->value();
+                const float pan_r       = p->pPan[1]->value();
+
+                p->vDelay[0].fGain[0]   = (100.0f - pan_l) * bal_l;
+                p->vDelay[0].fGain[1]   = (100.0f - pan_r) * bal_l;
+                p->vDelay[0].fFeedback  = feedback;
+                p->vDelay[1].fGain[0]   = (100.0f + pan_l) * bal_r;
+                p->vDelay[1].fGain[1]   = (100.0f + pan_r) * bal_r;
+                p->vDelay[1].fFeedback  = feedback;
+            }
+
+            // Update equalizer settings
+            const bool eq_on        = p->pEq->value() >= 0.5f;
+            const bool low_on       = p->pLowCut->value() >= 0.5f;
+            const bool high_on      = p->pHighCut->value() >= 0.5f;
+            dspu::equalizer_mode_t eq_mode = (eq_on || low_on || high_on) ? dspu::EQM_IIR : dspu::EQM_BYPASS;
+
+            for (size_t j=0; j<nInputs; ++j)
+            {
+                // Update equalizer
+                dspu::Equalizer *eq     = &p->vDelay[j].sEqualizer;
+                eq->set_mode(eq_mode);
+
+                if (eq_mode == dspu::EQM_BYPASS)
+                    continue;
+
+                dspu::filter_params_t fp;
+                size_t band     = 0;
+
+                // Set-up parametric equalizer
+                while (band < meta::slap_delay_metadata::EQ_BANDS)
+                {
+                    if (band == 0)
+                    {
+                        fp.fFreq        = band_freqs[band];
+                        fp.fFreq2       = fp.fFreq;
+                        fp.nType        = (eq_on) ? dspu::FLT_MT_LRX_LOSHELF : dspu::FLT_NONE;
+                    }
+                    else if (band == (meta::slap_delay_metadata::EQ_BANDS - 1))
+                    {
+                        fp.fFreq        = band_freqs[band-1];
+                        fp.fFreq2       = fp.fFreq;
+                        fp.nType        = (eq_on) ? dspu::FLT_MT_LRX_HISHELF : dspu::FLT_NONE;
+                    }
+                    else
+                    {
+                        fp.fFreq        = band_freqs[band-1];
+                        fp.fFreq2       = band_freqs[band];
+                        fp.nType        = (eq_on) ? dspu::FLT_MT_LRX_LADDERPASS : dspu::FLT_NONE;
+                    }
+
+                    fp.fGain        = p->pFreqGain[band]->value();
+                    fp.nSlope       = 2;
+                    fp.fQuality     = 0.0f;
+
+                    // Update filter parameters
+                    eq->set_params(band++, &fp);
+                }
+
+                // Setup hi-pass filter
+                fp.nType        = (low_on) ? dspu::FLT_BT_BWC_HIPASS : dspu::FLT_NONE;
+                fp.fFreq        = p->pLowFreq->value();
+                fp.fFreq2       = fp.fFreq;
+                fp.fGain        = 1.0f;
+                fp.nSlope       = 4;
+                fp.fQuality     = 0.0f;
+                eq->set_params(band++, &fp);
+
+                // Setup low-pass filter
+                fp.nType        = (high_on) ? dspu::FLT_BT_BWC_LOPASS : dspu::FLT_NONE;
+                fp.fFreq        = p->pHighFreq->value();
+                fp.fFreq2       = fp.fFreq;
+                fp.fGain        = 1.0f;
+                fp.nSlope       = 4;
+                fp.fQuality     = 0.0f;
+                eq->set_params(band++, &fp);
+            }
+        }
+
+        void slap_delay::sync_processors_state()
+        {
+            for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
+            {
+                processor_t * const p = &vProcessors[i];
+                ProcessorAllocator * const a = vAllocators[i];
+
+                // Check if we can analyze execution result
+                if (a->completed())
+                {
+                    if (a->successful())
+                    {
+                        proc_state_t & state    = a->state();
+                        p->vDelay               = state.vProcessors;
+                        p->nChangeResp          = state.nChangeId;
+                        update_processor_state(p);
+                    }
+
+                    a->reset();
+                }
+
+                // Check if we can submit new job
+                if ((p->nChangeReq != p->nChangeResp) && (a->idle()))
+                {
+                    proc_state_t & state    = a->state();
+                    state.vProcessors       = release_ptr(p->vDelay);
+                    state.nLength           = (p->nMode != meta::slap_delay_metadata::OP_MODE_NONE) ? nDelayLength : 0;
+                    state.nSampleRate       = fSampleRate;
+                    state.nChangeId         = p->nChangeReq;
+
+                    pExecutor->submit(a);
+                }
+            }
         }
 
         void slap_delay::process(size_t samples)
         {
+            // Update processor state
+            sync_processors_state();
+
             // Prepare inputs and outputs
             for (size_t i=0; i<nInputs; ++i)
                 vInputs[i].vIn      = vInputs[i].pIn->buffer<float>();
@@ -699,8 +787,10 @@ namespace lsp
                     for (size_t j=0; j<meta::slap_delay_metadata::MAX_PROCESSORS; ++j)
                     {
                         // Skip processor if it is turned off
-                        processor_t *p          = &vProcessors[j];
-                        if (p->nMode == meta::slap_delay_metadata::OP_MODE_NONE)
+                        processor_t * const p   = &vProcessors[j];
+                        if ((p->nMode == meta::slap_delay_metadata::OP_MODE_NONE) ||
+                            (p->nChangeReq != p->nChangeResp) ||
+                            (p->vDelay == NULL))
                             continue;
 
                         mono_processor_t *mpl   = &p->vDelay[0];
@@ -750,9 +840,12 @@ namespace lsp
                     for (size_t j=0; j<meta::slap_delay_metadata::MAX_PROCESSORS; ++j)
                     {
                         // Skip processor if it is turned off
-                        processor_t *p          = &vProcessors[j];
-                        if (p->nMode == meta::slap_delay_metadata::OP_MODE_NONE)
+                        processor_t * const p   = &vProcessors[j];
+                        if ((p->nMode == meta::slap_delay_metadata::OP_MODE_NONE) ||
+                            (p->nChangeReq != p->nChangeResp) ||
+                            (p->vDelay == NULL))
                             continue;
+
                         mono_processor_t *mp    = &p->vDelay[0];
 
                         if (p->nNewDelay != p->nDelay)
@@ -825,22 +918,29 @@ namespace lsp
                     const processor_t *p = &vProcessors[i];
                     v->begin_object(p, sizeof(processor_t));
                     {
-                        v->begin_array("vDelay", p->vDelay, 2);
+                        if (p->vDelay != NULL)
                         {
-                            for (size_t i=0; i<nInputs; ++i)
+                            v->begin_array("vDelay", p->vDelay, nInputs);
                             {
-                                const mono_processor_t *mp  = &p->vDelay[i];
+                                for (size_t i=0; i<nInputs; ++i)
+                                {
+                                    const mono_processor_t *mp  = &p->vDelay[i];
 
-                                v->write_object("sBuffer", &mp->sBuffer);
-                                v->write_object("sEqualizer", &mp->sEqualizer);
-                                v->writev("fGain", mp->fGain, 2);
-                                v->write("fFeedback", mp->fFeedback);
+                                    v->write_object("sBuffer", &mp->sBuffer);
+                                    v->write_object("sEqualizer", &mp->sEqualizer);
+                                    v->writev("fGain", mp->fGain, 2);
+                                    v->write("fFeedback", mp->fFeedback);
+                                }
                             }
+                            v->end_array();
                         }
-                        v->end_array();
+                        else
+                            v->write("vDelay", p->vDelay);
 
                         v->write("nDelay", p->nDelay);
                         v->write("nNewDelay", p->nNewDelay);
+                        v->write("nChangeReq", p->nNewDelay);
+                        v->write("nChangeResp", p->nNewDelay);
                         v->write("nMode", p->nMode);
 
                         v->write("pMode", p->pMode);
