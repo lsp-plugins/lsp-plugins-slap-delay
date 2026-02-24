@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2026 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2026 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -39,13 +39,6 @@ namespace lsp
         class slap_delay: public plug::Module
         {
             protected:
-                enum proc_mode_t
-                {
-                    M_OFF,
-                    M_TIME,
-                    M_DISTANCE
-                };
-
                 typedef struct mono_processor_t
                 {
                     dspu::RawRingBuffer     sBuffer;    // Ring buffer for the delay data
@@ -58,11 +51,11 @@ namespace lsp
 
                 typedef struct processor_t
                 {
-                    mono_processor_t        vDelay[2];
+                    mono_processor_t       *vDelay;     // Delay processors
 
                     size_t                  nDelay;     // Delay
                     size_t                  nNewDelay;  // New delay
-                    size_t                  nMode;      // Operating mode
+                    uint32_t                nMode;      // Current operating mode
 
                     plug::IPort            *pMode;      // Operating mode port
                     plug::IPort            *pEq;        // Equalizer

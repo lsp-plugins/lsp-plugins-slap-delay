@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2024 Linux Studio Plugins Project <https://lsp-plug.in/>
- *           (C) 2024 Vladimir Sadovnikov <sadko4u@gmail.com>
+ * Copyright (C) 2026 Linux Studio Plugins Project <https://lsp-plug.in/>
+ *           (C) 2026 Vladimir Sadovnikov <sadko4u@gmail.com>
  *
  * This file is part of lsp-plugins-slap-delay
  * Created on: 3 авг. 2021 г.
@@ -75,7 +75,11 @@ namespace lsp
             {
                 processor_t *p      = &vProcessors[i];
 
-                for (size_t j=0; j<2; ++j)
+                p->vDelay           = new mono_processor_t[nInputs];
+                if (p->vDelay == NULL)
+                    return;
+
+                for (size_t j=0; j<nInputs; ++j)
                 {
                     mono_processor_t *mp = &p->vDelay[j];
 
@@ -186,7 +190,7 @@ namespace lsp
 
                 p->nDelay           = 0;
                 p->nNewDelay        = 0;
-                p->nMode            = M_OFF;
+                p->nMode            = meta::slap_delay_metadata::OP_MODE_NONE;
 
                 p->pMode            = NULL;
                 p->pTime            = NULL;
@@ -206,7 +210,7 @@ namespace lsp
                 for (size_t j=0; j<meta::slap_delay_metadata::EQ_BANDS; ++j)
                     p->pFreqGain[j]     = NULL;
 
-                for (size_t j=0; j<2; ++j)
+                for (size_t j=0; j<nInputs; ++j)
                 {
                     mono_processor_t *mp = &p->vDelay[j];
 
@@ -302,13 +306,18 @@ namespace lsp
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
             {
                 processor_t *p      = &vProcessors[i];
-                for (size_t j=0; j<2; ++j)
+                if (p->vDelay == NULL)
+                    continue;
+
+                for (size_t j=0; j<nInputs; ++j)
                 {
                     mono_processor_t *mp = &p->vDelay[j];
 
                     mp->sBuffer.destroy();
                     mp->sEqualizer.destroy();
                 }
+                delete [] p->vDelay;
+                p->vDelay   = NULL;
             }
 
             free_aligned(vData);
@@ -425,8 +434,6 @@ namespace lsp
                     p->vDelay[0].fGain[0]   = (100.0f - pan) * gain;
                     p->vDelay[0].fGain[1]   = (100.0f + pan) * gain;
                     p->vDelay[0].fFeedback  = feedback;
-                    p->vDelay[1].fGain[0]   = 0.0f;
-                    p->vDelay[1].fGain[1]   = 0.0f;
                     if ((old_mode == meta::slap_delay_metadata::OP_MODE_NONE) && (old_mode != p->nMode))
                     {
                         p->vDelay[0].bClear     = true;
@@ -460,7 +467,7 @@ namespace lsp
                 }
 
                 // Update equalizer settings
-                for (size_t j=0; j<2; ++j)
+                for (size_t j=0; j<nInputs; ++j)
                 {
                     // Update equalizer
                     dspu::Equalizer *eq     = &p->vDelay[j].sEqualizer;
@@ -542,7 +549,7 @@ namespace lsp
 
             // Initialize devices responsible for delay implementation
             for (size_t i=0; i<meta::slap_delay_metadata::MAX_PROCESSORS; ++i)
-                for (size_t j=0; j<2; ++j)
+                for (size_t j=0; j<nInputs; ++j)
                 {
                     mono_processor_t *mp    = &vProcessors[i].vDelay[j];
                     mp->sBuffer.init(buf_size);
@@ -820,7 +827,7 @@ namespace lsp
                     {
                         v->begin_array("vDelay", p->vDelay, 2);
                         {
-                            for (size_t i=0; i<2; ++i)
+                            for (size_t i=0; i<nInputs; ++i)
                             {
                                 const mono_processor_t *mp  = &p->vDelay[i];
 
