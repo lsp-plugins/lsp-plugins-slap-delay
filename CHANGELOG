@@ -2,6 +2,9 @@
 * RECENT CHANGES
 *******************************************************************************
 
+=== 1.0.32 ===
+* Updated build scripts and dependencies.
+
 === 1.0.31 ===
 * Memory consumption optimizations: memory is not allocated for non-used delay lines.
 * Fixed muting of delay line when delay is zero.
