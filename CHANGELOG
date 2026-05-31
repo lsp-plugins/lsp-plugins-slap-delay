@@ -3,6 +3,7 @@
 *******************************************************************************
 
 === 1.0.33 ===
+* Updated delay line numbering (starting with 1) in metadata.
 * Updated build scripts and dependencies.
 
 === 1.0.32 ===
