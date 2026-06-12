@@ -1,9 +1,9 @@
 {
 	"slap_delay": {
-		"lines_0:3": "Lignes de délai 1-4",
-		"lines_4:7": "Lignes de délai 5-8",
-		"lines_8:11": "Lignes de délai 9-12",
-		"lines_12:15": "Lignes de délai 13-16",
+		"lines_1:4": "Lignes de délai 1-4",
+		"lines_5:8": "Lignes de délai 5-8",
+		"lines_9:12": "Lignes de délai 9-12",
+		"lines_13:16": "Lignes de délai 13-16",
 		"modes": {
 			"distance": "Distance",
 			"notes": "Notes",

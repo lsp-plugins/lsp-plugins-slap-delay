@@ -26,7 +26,7 @@
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MAJOR       1
 #define LSP_PLUGINS_SLAP_DELAY_VERSION_MINOR       0
-#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       32
+#define LSP_PLUGINS_SLAP_DELAY_VERSION_MICRO       33
 
 #define LSP_PLUGINS_SLAP_DELAY_VERSION  \
     LSP_MODULE_VERSION( \
@@ -52,10 +52,10 @@ namespace lsp
 
         static const port_item_t slap_delay_lines[] =
         {
-            { "0-3",        "slap_delay.lines_0:3" },
-            { "4-7",        "slap_delay.lines_4:7" },
-            { "8-11",       "slap_delay.lines_8:11" },
-            { "12-15",      "slap_delay.lines_12:15" },
+            { "1-4",        "slap_delay.lines_1:4" },
+            { "5-8",        "slap_delay.lines_5:8" },
+            { "9-12",       "slap_delay.lines_9:12" },
+            { "13-16",      "slap_delay.lines_13:16" },
             { NULL, NULL }
         };
 
@@ -85,46 +85,46 @@ namespace lsp
             SWITCH("mono", "Mono output", "Mono", 0.0f), \
             OUT_GAIN
 
-        #define SLAP_DELAY_PROCESSOR(id, pan) \
-            COMBO("dm" #id, "Delay " #id " mode", "Mode " #id, 0, slap_delay_modes), \
-            pan(#id, "Delay " #id, " " #id), \
-            SWITCH("s" #id, "Delay " #id " solo", "Solo " #id, 0.0f), \
-            SWITCH("m" #id, "Delay " #id " mute", "Mute " #id, 0.0f), \
-            SWITCH("ph" #id, "Delay " #id " phase", "Phase " #id, 0.0f), \
-            CONTROL("dt" #id, "Delay " #id " time", "Delay " #id, U_MSEC, slap_delay_metadata::TIME), \
-            CONTROL("dd" #id, "Delay " #id " distance", "Distance " #id, U_M, slap_delay_metadata::DISTANCE), \
-            CONTROL("df" #id, "Delay " #id " fraction", "Frac " #id, U_BAR, slap_delay_metadata::FRACTION), \
-            INT_CONTROL("ds" #id, "Delay " #id " denominator", "Denom " #id, U_BEAT, slap_delay_metadata::DENOMINATOR), \
-            SWITCH("eq" #id, "Equalizer " #id " on", "Eq " #id, 0.0f), \
-            SWITCH("lfc" #id, "Delay " #id " low-cut", "LC On " #id, 0.0f), \
-            LOG_CONTROL("flc" #id, "Delay " #id " low-cut frequency", "LC freq " #id, U_HZ, slap_delay_metadata::LOW_CUT), \
-            SWITCH("hfc" #id, "Delay " #id " high-cut", "HC On " #id, 0.0f), \
-            LOG_CONTROL("fhc" #id, "Delay " #id " high-cut frequency", "HC freq " #id, U_HZ, slap_delay_metadata::HIGH_CUT), \
-            LOG_CONTROL("fbs" #id, "Delay " #id " sub-bass", "Sub lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbb" #id, "Delay " #id " bass", "Bass lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbm" #id, "Delay " #id " middle", "Mid lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbp" #id, "Delay " #id " presence", "Presence lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            LOG_CONTROL("fbt" #id, "Delay " #id " treble", "Treble lvl " #id, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
-            AMP_GAIN1("dfb" #id, "Delay " #id " feedback", "Feed " #id, GAIN_AMP_M_INF_DB), \
-            AMP_GAIN10("dg" #id, "Delay " #id " gain", "Gain " #id, GAIN_AMP_0_DB)
+        #define SLAP_DELAY_PROCESSOR(id, sid, pan) \
+            COMBO("dm" #id, "Delay " #sid " mode", "Mode " #sid, 0, slap_delay_modes), \
+            pan(#id, "Delay " #sid, " " #sid), \
+            SWITCH("s" #id, "Delay " #sid " solo", "Solo " #sid, 0.0f), \
+            SWITCH("m" #id, "Delay " #sid " mute", "Mute " #sid, 0.0f), \
+            SWITCH("ph" #id, "Delay " #sid " phase", "Phase " #sid, 0.0f), \
+            CONTROL("dt" #id, "Delay " #sid " time", "Delay " #sid, U_MSEC, slap_delay_metadata::TIME), \
+            CONTROL("dd" #id, "Delay " #sid " distance", "Distance " #sid, U_M, slap_delay_metadata::DISTANCE), \
+            CONTROL("df" #id, "Delay " #sid " fraction", "Frac " #sid, U_BAR, slap_delay_metadata::FRACTION), \
+            INT_CONTROL("ds" #id, "Delay " #sid " denominator", "Denom " #sid, U_BEAT, slap_delay_metadata::DENOMINATOR), \
+            SWITCH("eq" #id, "Equalizer " #sid " on", "Eq " #sid, 0.0f), \
+            SWITCH("lfc" #id, "Delay " #sid " low-cut", "LC On " #sid, 0.0f), \
+            LOG_CONTROL("flc" #id, "Delay " #sid " low-cut frequency", "LC freq " #sid, U_HZ, slap_delay_metadata::LOW_CUT), \
+            SWITCH("hfc" #id, "Delay " #sid " high-cut", "HC On " #sid, 0.0f), \
+            LOG_CONTROL("fhc" #id, "Delay " #sid " high-cut frequency", "HC freq " #sid, U_HZ, slap_delay_metadata::HIGH_CUT), \
+            LOG_CONTROL("fbs" #id, "Delay " #sid " sub-bass", "Sub lvl " #sid, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbb" #id, "Delay " #sid " bass", "Bass lvl " #sid, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbm" #id, "Delay " #sid " middle", "Mid lvl " #sid, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbp" #id, "Delay " #sid " presence", "Presence lvl " #sid, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            LOG_CONTROL("fbt" #id, "Delay " #sid " treble", "Treble lvl " #sid, U_GAIN_AMP, slap_delay_metadata::BAND_GAIN), \
+            AMP_GAIN1("dfb" #id, "Delay " #sid " feedback", "Feed " #sid, GAIN_AMP_M_INF_DB), \
+            AMP_GAIN10("dg" #id, "Delay " #sid " gain", "Gain " #sid, GAIN_AMP_0_DB)
 
         #define SLAP_DELAY_PROCESSORS(pan) \
-            SLAP_DELAY_PROCESSOR(0, pan), \
-            SLAP_DELAY_PROCESSOR(1, pan), \
-            SLAP_DELAY_PROCESSOR(2, pan), \
-            SLAP_DELAY_PROCESSOR(3, pan), \
-            SLAP_DELAY_PROCESSOR(4, pan), \
-            SLAP_DELAY_PROCESSOR(5, pan), \
-            SLAP_DELAY_PROCESSOR(6, pan), \
-            SLAP_DELAY_PROCESSOR(7, pan), \
-            SLAP_DELAY_PROCESSOR(8, pan), \
-            SLAP_DELAY_PROCESSOR(9, pan), \
-            SLAP_DELAY_PROCESSOR(10, pan), \
-            SLAP_DELAY_PROCESSOR(11, pan), \
-            SLAP_DELAY_PROCESSOR(12, pan), \
-            SLAP_DELAY_PROCESSOR(13, pan), \
-            SLAP_DELAY_PROCESSOR(14, pan), \
-            SLAP_DELAY_PROCESSOR(15, pan)
+            SLAP_DELAY_PROCESSOR(0, 1, pan), \
+            SLAP_DELAY_PROCESSOR(1, 2, pan), \
+            SLAP_DELAY_PROCESSOR(2, 3, pan), \
+            SLAP_DELAY_PROCESSOR(3, 4, pan), \
+            SLAP_DELAY_PROCESSOR(4, 5, pan), \
+            SLAP_DELAY_PROCESSOR(5, 6, pan), \
+            SLAP_DELAY_PROCESSOR(6, 7, pan), \
+            SLAP_DELAY_PROCESSOR(7, 8, pan), \
+            SLAP_DELAY_PROCESSOR(8, 9, pan), \
+            SLAP_DELAY_PROCESSOR(9, 10, pan), \
+            SLAP_DELAY_PROCESSOR(10, 11, pan), \
+            SLAP_DELAY_PROCESSOR(11, 12, pan), \
+            SLAP_DELAY_PROCESSOR(12, 13, pan), \
+            SLAP_DELAY_PROCESSOR(13, 14, pan), \
+            SLAP_DELAY_PROCESSOR(14, 15, pan), \
+            SLAP_DELAY_PROCESSOR(15, 16, pan)
 
         static const port_t slap_delay_mono_ports[] =
         {
